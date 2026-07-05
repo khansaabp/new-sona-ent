@@ -1,0 +1,32 @@
+.auth-page {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: radial-gradient(circle at 50% 0%, rgba(0,217,192,0.06) 0%, transparent 60%);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 32px;
+}
+
+.auth-title {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.auth-link {
+  color: var(--accent-cyan);
+  font-weight: 600;
+}
+
+.auth-demo {
+  margin-top: 20px;
+  padding: 12px 14px;
+  background: var(--bg-panel-raised);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}

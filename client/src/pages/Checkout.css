@@ -1,0 +1,84 @@
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+}
+
+.checkout-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.checkout-section {
+  padding: 20px;
+}
+
+.checkout-section h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.radio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.radio-grid--2col {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.radio-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.radio-card input {
+  margin-top: 3px;
+  accent-color: var(--accent-cyan);
+}
+
+.radio-card--active {
+  border-color: var(--accent-cyan);
+  background: var(--accent-cyan-dim);
+}
+
+.radio-card__title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.credit-box {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px dashed var(--accent-amber);
+  border-radius: var(--radius-sm);
+  background: var(--accent-amber-dim);
+}
+
+@media (max-width: 900px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+  .field-grid, .radio-grid, .radio-grid--2col {
+    grid-template-columns: 1fr;
+  }
+  .cart-summary {
+    position: static;
+  }
+}

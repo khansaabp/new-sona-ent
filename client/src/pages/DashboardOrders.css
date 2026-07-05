@@ -1,0 +1,16 @@
+.order-filters {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.order-filters .select {
+  max-width: 220px;
+}
+
+.select-sm {
+  padding: 6px 8px;
+  font-size: 12px;
+}
