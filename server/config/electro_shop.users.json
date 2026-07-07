@@ -1,0 +1,88 @@
+[{
+  "_id": {
+    "$oid": "6a30373a20921c905295b048"
+  },
+  "name": "Shop Admin",
+  "email": "admin@electroshop.com",
+  "password": "$2a$10$6tiP8fDD6ATdPPuKbrHNoegefEdWCOTM7LeYsiWZOHeW7K.2Z3Kam",
+  "phone": "9999900000",
+  "role": "admin",
+  "address": {
+    "country": "India"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-06-15T17:32:42.312Z"
+  },
+  "updatedAt": {
+    "$date": "2026-06-15T17:32:42.312Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a30373a20921c905295b04a"
+  },
+  "name": "Counter Staff",
+  "email": "staff@electroshop.com",
+  "password": "$2a$10$eGs.eYEHFXYDYOPHppSVneIsn42QRS3SmrWzed4FuwGq9M3ag0Yaa",
+  "phone": "9999911111",
+  "role": "staff",
+  "address": {
+    "country": "India"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-06-15T17:32:42.396Z"
+  },
+  "updatedAt": {
+    "$date": "2026-06-15T17:32:42.396Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a30373a20921c905295b04c"
+  },
+  "name": "Rohan Sharma",
+  "email": "customer@example.com",
+  "password": "$2a$10$NjfBcRTyMcxSnlv53PBMJeW1tojsP6GqP738ZqNgy1LDOfMTAzNFa",
+  "phone": "9999922222",
+  "role": "customer",
+  "address": {
+    "street": "12 MG Road",
+    "city": "Nanded",
+    "state": "Maharashtra",
+    "pincode": "431601",
+    "country": "India"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-06-15T17:32:42.471Z"
+  },
+  "updatedAt": {
+    "$date": "2026-06-15T17:32:42.471Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a303ea1da5ac2fe4b7aa630"
+  },
+  "name": "gazi",
+  "email": "gazi@gmail.com",
+  "password": "$2a$10$uvaoQi0Y5eS4dUDx8ZnJoO0Z5lW6yjRXg991JsSvoRRcjpSg1Gyye",
+  "phone": "8483094199",
+  "role": "customer",
+  "address": {
+    "country": "India"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-06-15T18:04:17.662Z"
+  },
+  "updatedAt": {
+    "$date": "2026-06-15T18:04:17.662Z"
+  },
+  "__v": 0
+}]
