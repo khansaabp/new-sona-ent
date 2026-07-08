@@ -5,7 +5,7 @@ import ProductCard from '../components/ProductCard';
 import './Home.css';
 
 const categories = [
-  { name: 'Refrigerator', glyph: '▣' },
+  { name: 'Refrigerators', glyph: '▣' },
   { name: 'AC', glyph: '▭' },
   { name: 'washing machine', glyph: '◐' },
   { name: 'Audio', glyph: '◍' },
