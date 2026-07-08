@@ -15,7 +15,7 @@ const categories = [
 
 const slides = [
   {
-    url:'https://www.google.com/maps/place/New+Sona+Enterprises/@19.7164008,77.1451061,5a,63y/data=!3m8!1e2!3m6!1sCIHM0ogKEICAgICF7vmrPw!2e10!3e12!6shttps:%2F%2Flh3.googleusercontent.com%2Fgps-cs-s%2FAHRPTWkG5fbQAJyc8HSHqrD47BxbNjR-9qmhKpDD0Anm9nkcYIGVbOTPSQMtHL4U_7vrltlA8rin5n1Wzf0T8z7Q1noErN7RrndG2GTAXQTkaDyeHyp_H2ThBlo3-WSQHAAoW8BifwFn%3Dw86-h105-k-no!7i1298!8i1599!4m7!3m6!1s0x3bd0525431d9b477:0xb2190fffb405328e!8m2!3d19.7162251!4d77.1452002!10e5!16s%2Fg%2F11cn7dzpw9?entry=ttu&g_ep=EgoyMDI2MDcwNS4wIKXMDSoASAFQAw%3D%3D#',
+    url:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTv54hg6I-36MCq4CTE5UWokQBmZWKcVXZC8IYgWqWS0A&s=10',
     label:'Smartphones'
   },
   {
