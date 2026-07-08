@@ -16,7 +16,7 @@ const categories = [
 const slides = [
   {
     url:'https://lh3.googleusercontent.com/gps-cs-s/AHRPTWkG5fbQAJyc8HSHqrD47BxbNjR-9qmhKpDD0Anm9nkcYIGVbOTPSQMtHL4U_7vrltlA8rin5n1Wzf0T8z7Q1noErN7RrndG2GTAXQTkaDyeHyp_H2ThBlo3-WSQHAAoW8BifwFn=w115-h115-n-k-no',
-    label:'shop'
+    label:'Smartphones'
   }
   {
     url: 'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6524/6524315cv22d.jpg?w=800&q=80',
