@@ -50,12 +50,12 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="auth-demo">
+        {/* <div className="auth-demo">
           <div className="text-muted mono" style={{ fontSize: 12, marginBottom: 6 }}>Demo accounts (after seeding):</div>
           <div className="mono" style={{ fontSize: 12 }}>admin@electroshop.com / admin123</div>
           <div className="mono" style={{ fontSize: 12 }}>staff@electroshop.com / staff123</div>
           <div className="mono" style={{ fontSize: 12 }}>customer@example.com / customer123</div>
-        </div>
+        </div> */}
 
         <p className="text-muted" style={{ marginTop: 20, fontSize: 14 }}>
           New here? <Link to="/register" className="auth-link">Create an account</Link>
