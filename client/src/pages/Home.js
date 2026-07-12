@@ -7,7 +7,7 @@ import './Home.css';
 const categories = [
   { name: 'Refrigerators', glyph: '▣' },
   { name: 'AC', glyph: '▭' },
-  { name: 'washing machine', glyph: '◐' },
+  { name: 'washing machines', glyph: '◐' },
   { name: 'Audio', glyph: '◍' },
   { name: 'TVs & Displays', glyph: '▤' },
   { name: 'Inverter', glyph: '◈' }
@@ -78,7 +78,7 @@ const Home = () => {
   const [featured, setFeatured] = useState([]);
 
   useEffect(() => {
-    api.get('/products?sort=rating&limit=4').then(res => setFeatured(res.data.products)).catch(() => {});
+    api.get('/products?sort=rating&limit=6').then(res => setFeatured(res.data.products)).catch(() => {});
   }, []);
 
   return (
@@ -88,8 +88,8 @@ const Home = () => {
           <div className="hero__copy">
             <span className="tag tag-cyan">Now billing in cash &amp; credit</span>
             <h1 className="hero__title">
-              Power up with the latest tech.<br />
-              <span className="hero__title-accent">In-store and online.</span>
+              Welcome to New Sona Enterprises.<br />
+              <span className="hero__title-accent">In-store and online Purchase.</span>
             </h1>
             <p className="hero__subtitle text-secondary">
               Browse Tv, Fridges, washing machines and more. Checkout with cash, card, UPI,
