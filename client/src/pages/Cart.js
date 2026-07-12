@@ -6,7 +6,7 @@ import { formatCurrency } from '../utils/format';
 import './Cart.css';
 
 const Cart = () => {
-  const { items, updateQuantity, removeItem, subtotal, taxTotal } = useCart();
+  const { items, updateQuantity, removeItem, subtotal } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
 

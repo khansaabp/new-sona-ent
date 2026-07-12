@@ -14,7 +14,7 @@ const paymentMethods = [
 ];
 
 const Checkout = () => {
-  const { items, subtotal, taxTotal, clearCart } = useCart();
+  const { items, subtotal, clearCart } = useCart();
   const { user } = useAuth();
   const isStaffOrAdmin = user?.role === 'admin' || user?.role === 'staff';
   const navigate = useNavigate();
