@@ -15,7 +15,11 @@ const categories = [
 
 const slides = [
   {
-    url:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTv54hg6I-36MCq4CTE5UWokQBmZWKcVXZC8IYgWqWS0A&s=10',
+    url:'https://res.cloudinary.com/axufv7xe/image/upload/v1783878263/2023-10-27.1_wu8ck9.jpg',
+    label:'Smartphones'
+  },
+   {
+    url:'https://res.cloudinary.com/axufv7xe/image/upload/v1783877969/1.2_fmpufx.jpg',
     label:'Smartphones'
   },
   {
