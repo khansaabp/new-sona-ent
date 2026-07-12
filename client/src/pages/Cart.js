@@ -10,7 +10,7 @@ const Cart = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const total = subtotal + taxTotal;
+
 
   const handleCheckout = () => {
     if (!user) {
@@ -63,19 +63,15 @@ const Cart = () => {
 
         <div className="cart-summary card">
           <h2 className="cart-summary__title">Order Summary</h2>
-          <div className="cart-summary__row">
-            <span className="text-secondary">Subtotal</span>
-            <span className="mono">{formatCurrency(subtotal)}</span>
-          </div>
-          <div className="cart-summary__row">
-            <span className="text-secondary">Estimated GST</span>
-            <span className="mono">{formatCurrency(taxTotal)}</span>
-          </div>
-          <div className="cart-summary__divider"></div>
-          <div className="cart-summary__row cart-summary__total">
-            <span>Total</span>
-            <span className="mono">{formatCurrency(total)}</span>
-          </div>
+     <div className="cart-summary__row">
+  <span className="text-secondary">Subtotal (GST incl.)</span>
+  <span className="mono">{formatCurrency(subtotal)}</span>
+</div>
+<div className="cart-summary__divider"></div>
+<div className="cart-summary__row cart-summary__total">
+  <span>Total</span>
+  <span className="mono">{formatCurrency(subtotal)}</span>
+</div>
           <button className="btn btn-primary" style={{ width: '100%', marginTop: 16 }} onClick={handleCheckout}>
             Proceed to checkout
           </button>

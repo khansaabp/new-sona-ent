@@ -101,3 +101,32 @@
     box-shadow: none;
   }
 }
+.invoice__gst-table {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.invoice__gst-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.invoice__gst-table table th,
+.invoice__gst-table table td {
+  font-size: 13px;
+}
+
+.invoice__gst-table table th:not(:first-child),
+.invoice__gst-table table td:not(:first-child) {
+  text-align: right;
+}
+
+.invoice__gst-total-row td {
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-panel-raised);
+}

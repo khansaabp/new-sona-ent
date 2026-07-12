@@ -56,10 +56,10 @@ const createOrder = async (req, res, next) => {
       }
 
       const lineTotal = product.price * item.quantity;
-      const lineTax = (lineTotal * product.taxRate) / 100;
+const lineTax = 0; // GST already included in price
 
-      subtotal += lineTotal;
-      taxAmount += lineTax;
+subtotal += lineTotal;
+taxAmount += lineTax;
 
       orderItems.push({
         product: product._id,
@@ -77,7 +77,7 @@ const createOrder = async (req, res, next) => {
       await product.save();
     }
 
-    const grandTotal = Math.round((subtotal + taxAmount - discount + shippingFee) * 100) / 100;
+    const grandTotal = Math.round((subtotal - discount + shippingFee) * 100) / 100;
 
     const paymentData = {
       method: payment.method,

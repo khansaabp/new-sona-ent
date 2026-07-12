@@ -39,9 +39,8 @@ export const CartProvider = ({ children }) => {
   }, []);
 
   const clearCart = useCallback(() => setItems([]), []);
-
-  const subtotal = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-  const taxTotal = items.reduce((sum, i) => sum + (i.product.price * i.quantity * (i.product.taxRate || 0)) / 100, 0);
+const subtotal = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+const taxTotal = 0; // GST already included in displayed price
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   return (

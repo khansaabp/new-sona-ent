@@ -29,7 +29,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const grandTotal = Math.max(0, subtotal + taxTotal - Number(discount || 0));
+  const grandTotal = Math.max(0, subtotal - Number(discount || 0));
 
   const handlePlaceOrder = async () => {
     setError('');
@@ -197,10 +197,10 @@ const Checkout = () => {
             <span className="text-secondary">Subtotal</span>
             <span className="mono">{formatCurrency(subtotal)}</span>
           </div>
-          <div className="cart-summary__row">
-            <span className="text-secondary">GST</span>
-            <span className="mono">{formatCurrency(taxTotal)}</span>
-          </div>
+         <div className="cart-summary__row">
+  <span className="text-secondary">GST (included in price)</span>
+  <span className="mono text-muted">incl.</span>
+</div>
           {isStaffOrAdmin && (
           <div className="cart-summary__row">
             <span className="text-secondary">Discount</span>

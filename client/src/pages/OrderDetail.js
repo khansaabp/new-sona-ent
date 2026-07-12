@@ -9,6 +9,33 @@ const statusTag = (status) => {
   const map = { paid: 'tag-green', partial: 'tag-amber', unpaid: 'tag-muted', overdue: 'tag-red' };
   return map[status] || 'tag-muted';
 };
+// Calculate CGST and SGST from GST-inclusive price
+const calculateGSTBreakdown = (items) => {
+  let taxableValue = 0;
+  let totalCGST = 0;
+  let totalSGST = 0;
+
+  items.forEach(item => {
+    const rate = item.taxRate || 18;
+    const lineTotal = item.price * item.quantity;
+    // Extract GST from inclusive price
+    const gstAmount = (lineTotal * rate) / (100 + rate);
+    const taxable = lineTotal - gstAmount;
+    const cgst = gstAmount / 2;
+    const sgst = gstAmount / 2;
+
+    taxableValue += taxable;
+    totalCGST += cgst;
+    totalSGST += sgst;
+  });
+
+  return {
+    taxableValue: Math.round(taxableValue * 100) / 100,
+    cgst: Math.round(totalCGST * 100) / 100,
+    sgst: Math.round(totalSGST * 100) / 100,
+    totalGST: Math.round((totalCGST + totalSGST) * 100) / 100
+  };
+};
 
 const OrderDetail = () => {
   const { id } = useParams();
@@ -16,6 +43,7 @@ const OrderDetail = () => {
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
   const [payAmount, setPayAmount] = useState('');
+  const gstBreakdown = order ? calculateGSTBreakdown(order.items) : null;
   const [payLoading, setPayLoading] = useState(false);
 
   const fetchOrder = () => {
@@ -28,7 +56,9 @@ const OrderDetail = () => {
   }, [id]);
 
   if (error) return <div className="page-container empty-state">{error}</div>;
-  if (!order) return <div className="page-container empty-state">Loading invoice...</div>;
+if (!order) return <div className="page-container empty-state">Loading invoice...</div>;
+
+// const gstBreakdown = calculateGSTBreakdown(order.items);
 
   const isStaff = user?.role === 'admin' || user?.role === 'staff';
 
@@ -115,16 +145,77 @@ const OrderDetail = () => {
             ))}
           </tbody>
         </table>
+        <div className="invoice__gst-table">
+  <h4 className="invoice__gst-title">GST Breakdown</h4>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Taxable Value</th>
+        <th>GST Rate</th>
+        <th>CGST</th>
+        <th>SGST</th>
+        <th>Total GST</th>
+      </tr>
+    </thead>
+    <tbody>
+      {order.items.map(item => {
+        const rate = item.taxRate || 18;
+        const lineTotal = item.price * item.quantity;
+        const gstAmt = (lineTotal * rate) / (100 + rate);
+        const taxable = lineTotal - gstAmt;
+        const cgst = gstAmt / 2;
+        const sgst = gstAmt / 2;
+        return (
+          <tr key={item.sku}>
+            <td>{item.name}</td>
+            <td className="mono">{formatCurrency(taxable)}</td>
+            <td className="mono">{rate}%</td>
+            <td className="mono">{formatCurrency(cgst)}</td>
+            <td className="mono">{formatCurrency(sgst)}</td>
+            <td className="mono">{formatCurrency(gstAmt)}</td>
+          </tr>
+        );
+      })}
+      <tr className="invoice__gst-total-row">
+        <td><strong>Total</strong></td>
+        <td className="mono"><strong>{formatCurrency(gstBreakdown.taxableValue)}</strong></td>
+        <td></td>
+        <td className="mono"><strong>{formatCurrency(gstBreakdown.cgst)}</strong></td>
+        <td className="mono"><strong>{formatCurrency(gstBreakdown.sgst)}</strong></td>
+        <td className="mono"><strong>{formatCurrency(gstBreakdown.totalGST)}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
 
         <div className="invoice__totals">
           <div className="invoice__totals-row">
             <span className="text-secondary">Subtotal</span>
             <span className="mono">{formatCurrency(order.subtotal)}</span>
           </div>
-          <div className="invoice__totals-row">
-            <span className="text-secondary">GST</span>
-            <span className="mono">{formatCurrency(order.taxAmount)}</span>
-          </div>
+<div className="invoice__totals-row">
+  <span className="text-secondary">Taxable Value</span>
+  <span className="mono">{formatCurrency(gstBreakdown.taxableValue)}</span>
+</div>
+<div className="invoice__totals-row">
+  <span className="text-secondary">
+    CGST @ {order.items[0]?.taxRate / 2 || 9}%
+  </span>
+  <span className="mono">{formatCurrency(gstBreakdown.cgst)}</span>
+</div>
+<div className="invoice__totals-row">
+  <span className="text-secondary">
+    SGST @ {order.items[0]?.taxRate / 2 || 9}%
+  </span>
+  <span className="mono">{formatCurrency(gstBreakdown.sgst)}</span>
+</div>
+<div className="invoice__totals-row">
+  <span className="text-secondary">Total GST</span>
+  <span className="mono">{formatCurrency(gstBreakdown.totalGST)}</span>
+</div>
           <div className="invoice__totals-row">
             <span className="text-secondary">Discount</span>
             <span className="mono">- {formatCurrency(order.discount)}</span>
