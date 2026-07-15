@@ -6,13 +6,16 @@ import api from '../utils/api';
 import { formatCurrency } from '../utils/format';
 import './Checkout.css';
 
-const paymentMethods = [
-  { id: 'cash', label: 'Cash', desc: 'Pay in full at checkout / counter' },
+const getPaymentMethods = (orderType) => [
+  {
+    id: 'cash',
+    label: orderType === 'online' ? 'Cash on Delivery (COD)' : 'Cash',
+    desc: orderType === 'online' ? 'Pay in cash when your order is delivered' : 'Pay in full at the counter'
+  },
   { id: 'upi', label: 'UPI', desc: 'Pay via UPI app, settled instantly' },
   { id: 'card', label: 'Card', desc: 'Debit / Credit card payment' },
   { id: 'credit', label: 'Credit Account', desc: 'Bill now, pay later (approved customers)' }
 ];
-
 const Checkout = () => {
   const { items, subtotal, clearCart } = useCart();
   const { user } = useAuth();
@@ -124,7 +127,7 @@ const Checkout = () => {
           <section className="card checkout-section">
             <h2>Billing &amp; payment method</h2>
             <div className="radio-grid radio-grid--2col">
-              {paymentMethods.map(pm => (
+              {getPaymentMethods(orderType).map(pm => (
                 <label key={pm.id} className={`radio-card ${method === pm.id ? 'radio-card--active' : ''}`}>
                   <input type="radio" name="method" value={pm.id} checked={method === pm.id} onChange={() => setMethod(pm.id)} />
                   <div>

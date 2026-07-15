@@ -6,7 +6,7 @@ import {
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import StatCard from '../components/StatCard';
-import { formatCurrency, formatDateTime } from '../utils/format';
+import { formatCurrency, formatDateTime, getPaymentMethodLabel } from '../utils/format';
 import './Dashboard.css';
 
 const COLORS = ['#00D9C0', '#FFB627', '#5B9DFF', '#4ADE80', '#FF5C5C', '#C792EA', '#5C6E7A'];
@@ -181,7 +181,7 @@ const Dashboard = () => {
                 <tr key={order._id}>
                   <td className="mono"><Link to={`/orders/${order._id}`}>{order.invoiceNumber}</Link></td>
                   <td>{order.customerName}</td>
-                  <td><span className="tag tag-cyan">{order.payment.method}</span></td>
+                 <td><span className="tag tag-cyan">{getPaymentMethodLabel(order)}</span></td>
                   <td><span className={`tag ${statusTag(order.payment.status)}`}>{order.payment.status}</span></td>
                   <td className="mono">{formatCurrency(order.grandTotal)}</td>
                   <td className="text-muted">{formatDateTime(order.createdAt)}</td>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import { formatCurrency, formatDate, formatDateTime } from '../utils/format';
+import { formatCurrency, formatDate, formatDateTime, getPaymentMethodLabel } from '../utils/format';
 import './Invoice.css';
 
 const statusTag = (status) => {
@@ -178,9 +178,9 @@ if (!order) return <div className="page-container empty-state">Loading invoice..
 
   <div className="text-muted">{formatDateTime(order.createdAt)}</div>
             <div style={{ marginTop: 8 }}>
-              <span className={`tag ${statusTag(order.payment.status)}`}>{order.payment.status.toUpperCase()}</span>{' '}
-              <span className="tag tag-cyan">{order.payment.method.toUpperCase()}</span>{' '}
-              <span className="tag tag-muted">{order.orderStatus.toUpperCase()}</span>
+             <span className={`tag ${statusTag(order.payment.status)}`}>{order.payment.status.toUpperCase()}</span>{' '}
+<span className="tag tag-cyan">{getPaymentMethodLabel(order).toUpperCase()}</span>{' '}
+<span className="tag tag-muted">{order.orderStatus.toUpperCase()}</span>
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
-import { formatCurrency, formatDateTime } from '../utils/format';
+import { formatCurrency, formatDateTime, getPaymentMethodLabel } from '../utils/format';
 import './Orders.css';
 
 const statusTag = (status) => {
@@ -59,7 +59,7 @@ const Orders = () => {
                 <td className="mono">{order.invoiceNumber}</td>
                 <td className="text-muted">{formatDateTime(order.createdAt)}</td>
                 <td>{order.items.length} item{order.items.length !== 1 ? 's' : ''}</td>
-                <td><span className="tag tag-cyan">{order.payment.method}</span></td>
+                <td><span className="tag tag-cyan">{getPaymentMethodLabel(order)}</span></td>
                 <td><span className={`tag ${statusTag(order.payment.status)}`}>{order.payment.status}</span></td>
                 <td><span className="tag tag-muted">{order.orderStatus}</span></td>
                 <td className="mono">{formatCurrency(order.grandTotal)}</td>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
-import { formatCurrency, formatDateTime } from '../utils/format';
+import { formatCurrency, formatDateTime, getPaymentMethodLabel } from '../utils/format';
 import './DashboardOrders.css';
 
 const statusTag = (status) => {
@@ -108,7 +108,7 @@ const DashboardOrders = () => {
                 <tr key={order._id}>
                   <td className="mono">{order.invoiceNumber}</td>
                   <td>{order.customerName}</td>
-                  <td><span className="tag tag-cyan">{order.payment.method}</span></td>
+                 <td><span className="tag tag-cyan">{getPaymentMethodLabel(order)}</span></td>
                   <td><span className={`tag ${statusTag(order.payment.status)}`}>{order.payment.status}</span></td>
                   <td>
                     <select

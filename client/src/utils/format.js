@@ -23,3 +23,21 @@ export const formatDateTime = (date) => {
     minute: '2-digit'
   });
 };
+// Returns the correct display label for a payment method based on order type
+export const getPaymentMethodLabel = (order) => {
+  if (!order?.payment?.method) return '';
+
+  if (order.payment.method === 'cash' && order.orderType === 'online') {
+    return 'COD';
+  }
+
+  const labels = {
+    cash: 'Cash',
+    credit: 'Credit',
+    card: 'Card',
+    upi: 'UPI',
+    netbanking: 'Netbanking'
+  };
+
+  return labels[order.payment.method] || order.payment.method;
+};

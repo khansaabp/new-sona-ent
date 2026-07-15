@@ -37,9 +37,21 @@ const getSummary = async (req, res, next) => {
         { $group: { _id: null, total: { $sum: '$grandTotal' } } }
       ]),
       Order.aggregate([
-        { $match: { orderStatus: { $ne: 'cancelled' } } },
-        { $group: { _id: '$payment.method', total: { $sum: '$grandTotal' }, count: { $sum: 1 } } }
-      ])
+  { $match: { orderStatus: { $ne: 'cancelled' } } },
+  {
+    $group: {
+      _id: {
+        $cond: [
+          { $and: [{ $eq: ['$payment.method', 'cash'] }, { $eq: ['$orderType', 'online'] }] },
+          'cod',
+          '$payment.method'
+        ]
+      },
+      total: { $sum: '$grandTotal' },
+      count: { $sum: 1 }
+    }
+  }
+])
     ]);
 
     res.json({
