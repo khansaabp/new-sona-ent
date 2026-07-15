@@ -124,13 +124,16 @@ taxAmount += lineTax;
 // @access  Private
 const getOrders = async (req, res, next) => {
   try {
-    const { status, paymentStatus, paymentMethod, page = 1, limit = 10 } = req.query;
+ const { status, paymentStatus, paymentMethod, invoiceSearch, page = 1, limit = 10 } = req.query;
 
-    const query = {};
-    if (req.user.role === 'customer') {
-      query.customer = req.user._id;
-    }
-    if (status) query.orderStatus = status;
+const query = {};
+if (req.user.role === 'customer') {
+  query.customer = req.user._id;
+}
+if (status) query.orderStatus = status;
+if (invoiceSearch) {
+  query.invoiceNumber = { $regex: invoiceSearch, $options: 'i' };
+}
     if (paymentStatus) query['payment.status'] = paymentStatus;
     if (paymentMethod) query['payment.method'] = paymentMethod;
 
@@ -238,6 +241,49 @@ const getCreditOutstanding = async (req, res, next) => {
     next(err);
   }
 };
+// @desc    Update invoice number (admin only)
+// @route   PUT /api/orders/:id/invoice-number
+// @access  Private/Admin
+const updateInvoiceNumber = async (req, res, next) => {
+  try {
+    const { invoiceNumber } = req.body;
+
+    // Validate invoice number provided
+    if (!invoiceNumber || !invoiceNumber.trim()) {
+      return res.status(400).json({ message: 'Invoice number is required' });
+    }
+
+    const trimmed = invoiceNumber.trim().toUpperCase();
+
+    // Check if invoice number already exists on another order
+    const existing = await Order.findOne({
+      invoiceNumber: trimmed,
+      _id: { $ne: req.params.id }
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        message: `Invoice number ${trimmed} is already used by another order`
+      });
+    }
+
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const oldInvoiceNumber = order.invoiceNumber;
+    order.invoiceNumber = trimmed;
+    await order.save();
+
+    res.json({
+      message: `Invoice number updated from ${oldInvoiceNumber} to ${trimmed}`,
+      order
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   createOrder,
@@ -245,5 +291,6 @@ module.exports = {
   getOrderById,
   updateOrderStatus,
   recordPayment,
-  getCreditOutstanding
+  getCreditOutstanding,
+  updateInvoiceNumber
 };

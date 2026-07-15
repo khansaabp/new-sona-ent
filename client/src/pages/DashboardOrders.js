@@ -20,6 +20,7 @@ const DashboardOrders = () => {
   const fetchOrders = async (page = 1) => {
     setLoading(true);
     const params = new URLSearchParams();
+    if (filters.invoiceSearch) params.set('invoiceSearch', filters.invoiceSearch);
     if (filters.status) params.set('status', filters.status);
     if (filters.paymentMethod) params.set('paymentMethod', filters.paymentMethod);
     if (filters.paymentStatus) params.set('paymentStatus', filters.paymentStatus);
@@ -55,6 +56,13 @@ const DashboardOrders = () => {
       </div>
 
       <div className="order-filters card">
+          <input
+    className="input"
+    placeholder="Search invoice number..."
+    style={{ maxWidth: 220 }}
+    value={filters.invoiceSearch || ''}
+    onChange={e => setFilters(f => ({ ...f, invoiceSearch: e.target.value }))}
+  />
         <select className="select" value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
           <option value="">All order statuses</option>
           {orderStatusOptions.map(s => <option key={s} value={s}>{s}</option>)}

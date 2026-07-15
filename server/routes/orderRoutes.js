@@ -5,7 +5,8 @@ const {
   getOrderById,
   updateOrderStatus,
   recordPayment,
-  getCreditOutstanding
+  getCreditOutstanding,
+  updateInvoiceNumber
 } = require('../controllers/orderController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -17,5 +18,6 @@ router.get('/meta/credit-outstanding', protect, authorize('admin', 'staff'), get
 router.get('/:id', protect, getOrderById);
 router.put('/:id/status', protect, authorize('admin', 'staff'), updateOrderStatus);
 router.put('/:id/pay', protect, authorize('admin', 'staff'), recordPayment);
+router.put('/:id/invoice-number', protect, authorize('admin'), updateInvoiceNumber);
 
 module.exports = router;

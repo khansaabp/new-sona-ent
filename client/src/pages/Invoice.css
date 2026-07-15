@@ -130,3 +130,27 @@
   border-top: 1px solid var(--border-subtle);
   background: var(--bg-panel-raised);
 }
+.invoice__number-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.invoice__number-row h2 {
+  margin: 0;
+}
+
+.invoice__number-edit {
+  margin-bottom: 8px;
+}
+
+.invoice__number-edit .input {
+  max-width: 260px;
+}
+
+.invoice__number-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}

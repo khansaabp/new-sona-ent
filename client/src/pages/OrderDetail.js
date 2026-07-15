@@ -45,6 +45,11 @@ const OrderDetail = () => {
   const [payAmount, setPayAmount] = useState('');
   const gstBreakdown = order ? calculateGSTBreakdown(order.items) : null;
   const [payLoading, setPayLoading] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState(false);
+const [newInvoiceNumber, setNewInvoiceNumber] = useState('');
+const [invoiceEditLoading, setInvoiceEditLoading] = useState(false);
+const [invoiceEditError, setInvoiceEditError] = useState('');
+const [invoiceEditSuccess, setInvoiceEditSuccess] = useState('');
 
   const fetchOrder = () => {
     api.get(`/orders/${id}`).then(res => setOrder(res.data)).catch(err => setError(err.response?.data?.message || 'Order not found'));
@@ -62,6 +67,25 @@ if (!order) return <div className="page-container empty-state">Loading invoice..
 
   const isStaff = user?.role === 'admin' || user?.role === 'staff';
 
+  const handleEditInvoiceNumber = async () => {
+  setInvoiceEditError('');
+  setInvoiceEditSuccess('');
+  setInvoiceEditLoading(true);
+  try {
+    const { data } = await api.put(`/orders/${id}/invoice-number`, {
+      invoiceNumber: newInvoiceNumber
+    });
+    setInvoiceEditSuccess(data.message);
+    setEditingInvoice(false);
+    fetchOrder(); // refresh order with new invoice number
+  } catch (err) {
+    setInvoiceEditError(
+      err.response?.data?.message || 'Failed to update invoice number'
+    );
+  } finally {
+    setInvoiceEditLoading(false);
+  }
+};
   const handleRecordPayment = async () => {
     if (!payAmount || Number(payAmount) <= 0) return;
     setPayLoading(true);
@@ -90,9 +114,69 @@ if (!order) return <div className="page-container empty-state">Loading invoice..
             <div className="text-muted">GSTIN: 27ABCDE1234F1Z5</div>
             <div className="text-muted">nagar parishad complex,akola road, Hingoli, Maharashtra, India</div>
           </div>
-          <div className="invoice__meta">
-            <h2 className="mono">{order.invoiceNumber}</h2>
-            <div className="text-muted">{formatDateTime(order.createdAt)}</div>
+         <div className="invoice__meta">
+  {/* Invoice number display and edit */}
+  {!editingInvoice ? (
+    <div className="invoice__number-row">
+      <h2 className="mono">{order.invoiceNumber}</h2>
+      {user?.role === 'admin' && (
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => {
+            setNewInvoiceNumber(order.invoiceNumber);
+            setEditingInvoice(true);
+            setInvoiceEditError('');
+            setInvoiceEditSuccess('');
+          }}
+          title="Edit invoice number"
+        >
+          ✎ Edit
+        </button>
+      )}
+    </div>
+  ) : (
+    <div className="invoice__number-edit">
+      <input
+        className="input"
+        value={newInvoiceNumber}
+        onChange={e => setNewInvoiceNumber(e.target.value.toUpperCase())}
+        placeholder="e.g. INV-20240615-0042"
+        style={{ fontFamily: 'var(--font-mono)', fontSize: 14 }}
+        autoFocus
+      />
+      {invoiceEditError && (
+        <div className="error-banner" style={{ marginTop: 8 }}>
+          {invoiceEditError}
+        </div>
+      )}
+      <div className="invoice__number-edit-actions">
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={handleEditInvoiceNumber}
+          disabled={invoiceEditLoading || !newInvoiceNumber.trim()}
+        >
+          {invoiceEditLoading ? 'Saving...' : 'Save'}
+        </button>
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => {
+            setEditingInvoice(false);
+            setInvoiceEditError('');
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )}
+
+  {invoiceEditSuccess && (
+    <div className="success-banner" style={{ marginTop: 8 }}>
+      {invoiceEditSuccess}
+    </div>
+  )}
+
+  <div className="text-muted">{formatDateTime(order.createdAt)}</div>
             <div style={{ marginTop: 8 }}>
               <span className={`tag ${statusTag(order.payment.status)}`}>{order.payment.status.toUpperCase()}</span>{' '}
               <span className="tag tag-cyan">{order.payment.method.toUpperCase()}</span>{' '}
