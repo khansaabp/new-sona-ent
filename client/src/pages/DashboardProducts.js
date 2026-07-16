@@ -333,27 +333,42 @@ const handleImageUpload = async () => {
             <td><span className="tag tag-muted">{p.category}</span></td>
             <td className="mono">{formatCurrency(p.price)}</td>
             <td>
-              <div className="stock-control">
-                <button
-                  className="stock-control__btn"
-                  onClick={() => handleStockChange(p._id, -1)}
-                  disabled={p.stock === 0 || stockUpdating[p._id]}
-                  aria-label="Decrease stock"
-                >
-                  −
-                </button>
-                <span className={`tag ${p.stock === 0 ? 'tag-red' : p.stock <= p.lowStockThreshold ? 'tag-amber' : 'tag-green'}`}>
-                  {p.stock} units
-                </span>
-                <button
-                  className="stock-control__btn"
-                  onClick={() => handleStockChange(p._id, 1)}
-                  disabled={stockUpdating[p._id]}
-                  aria-label="Increase stock"
-                >
-                  +
-                </button>
-              </div>
+          <td>
+  <div className="stock-control">
+    <button
+      className="stock-control__btn"
+      onClick={() => handleStockChange(p._id, -1)}
+      disabled={p.stock === 0 || stockUpdating[p._id]}
+      aria-label="Decrease stock"
+    >
+      −
+    </button>
+    <span className={`tag ${p.stock === 0 ? 'tag-red' : p.stock <= p.lowStockThreshold ? 'tag-amber' : 'tag-green'}`}>
+      {p.stock} units
+    </span>
+    <button
+      className="stock-control__btn"
+      onClick={() => handleStockChange(p._id, 1)}
+      disabled={stockUpdating[p._id]}
+      aria-label="Increase stock"
+    >
+      +
+    </button>
+    <button
+      className="btn btn-ghost btn-sm"
+      style={{ marginLeft: 4 }}
+      onClick={() => {
+        const qty = prompt(`Enter quantity to add/remove for ${p.name}\n(use negative number to remove, e.g. -5)`);
+        const num = parseInt(qty, 10);
+        if (!isNaN(num) && num !== 0) {
+          handleStockChange(p._id, num);
+        }
+      }}
+    >
+      Bulk
+    </button>
+  </div>
+</td>
             </td>
             <td style={{ display: 'flex', gap: 8 }}>
               <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>Edit</button>
