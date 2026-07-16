@@ -22,6 +22,9 @@ const DashboardProducts = () => {
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
 const [filterLowStock, setFilterLowStock] = useState(false);
+const [filterLowStock, setFilterLowStock] = useState(false);
+const [searchQuery, setSearchQuery] = useState('');
+const [stockUpdating, setStockUpdating] = useState({});
 const [imageFile, setImageFile] = useState(null);
 const [imagePreview, setImagePreview] = useState('');
 const [uploadingImage, setUploadingImage] = useState(false);
@@ -40,7 +43,41 @@ const [uploadingImage, setUploadingImage] = useState(false);
       setLoading(false);
     }
   };
+const filteredProducts = products.filter(p => {
+  if (!searchQuery.trim()) return true;
+  const q = searchQuery.toLowerCase();
+  return (
+    p.name.toLowerCase().includes(q) ||
+    p.sku.toLowerCase().includes(q) ||
+    p.brand.toLowerCase().includes(q) ||
+    p.category.toLowerCase().includes(q)
+  );
+});
+const handleStockChange = async (productId, delta) => {
+  const product = products.find(p => p._id === productId);
+  if (!product) return;
 
+  const newStock = product.stock + delta;
+  if (newStock < 0) return; // prevent negative stock
+
+  // Optimistic UI update
+  setStockUpdating(prev => ({ ...prev, [productId]: true }));
+  setProducts(prev =>
+    prev.map(p => (p._id === productId ? { ...p, stock: newStock } : p))
+  );
+
+  try {
+    await api.put(`/products/${productId}`, { stock: newStock });
+  } catch (err) {
+    // Revert on failure
+    setProducts(prev =>
+      prev.map(p => (p._id === productId ? { ...p, stock: product.stock } : p))
+    );
+    alert('Failed to update stock: ' + (err.response?.data?.message || err.message));
+  } finally {
+    setStockUpdating(prev => ({ ...prev, [productId]: false }));
+  }
+};
   useEffect(() => {
     fetchProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -131,17 +168,32 @@ const handleImageUpload = async () => {
   return (
     <div>
       <div className="dash-header">
-        <div>
-          <h1>Inventory</h1>
-          <p className="text-muted">{products.length} products {filterLowStock ? '(low stock)' : ''}</p>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className={`btn btn-sm ${filterLowStock ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilterLowStock(v => !v)}>
-            Low stock only
-          </button>
-          <button className="btn btn-primary" onClick={openCreate}>+ Add product</button>
-        </div>
-      </div>
+  <div>
+    <h1>Inventory</h1>
+    <p className="text-muted">{filteredProducts.length} products {filterLowStock ? '(low stock)' : ''}</p>
+  </div>
+  <div style={{ display: 'flex', gap: 8 }}>
+    <button className={`btn btn-sm ${filterLowStock ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilterLowStock(v => !v)}>
+      Low stock only
+    </button>
+    <button className="btn btn-primary" onClick={openCreate}>+ Add product</button>
+  </div>
+</div>
+
+<div className="inventory-search">
+  <input
+    className="input"
+    placeholder="Search by name, SKU, brand, or category..."
+    value={searchQuery}
+    onChange={e => setSearchQuery(e.target.value)}
+  />
+  {searchQuery && (
+    <button className="btn btn-ghost btn-sm" onClick={() => setSearchQuery('')}>
+      Clear
+    </button>
+  )}
+</div>
+    
 
       {showForm && (
         <div className="card product-form">
@@ -255,44 +307,64 @@ const handleImageUpload = async () => {
       )}
 
       <div className="card" style={{ overflowX: 'auto' }}>
-        {loading ? (
-          <div className="empty-state">Loading inventory...</div>
-        ) : products.length === 0 ? (
-          <div className="empty-state">No products found.</div>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>SKU</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(p => (
-                <tr key={p._id}>
-                  <td>{p.name}</td>
-                  <td className="mono text-muted">{p.sku}</td>
-                  <td><span className="tag tag-muted">{p.category}</span></td>
-                  <td className="mono">{formatCurrency(p.price)}</td>
-                  <td>
-                    <span className={`tag ${p.stock === 0 ? 'tag-red' : p.stock <= p.lowStockThreshold ? 'tag-amber' : 'tag-green'}`}>
-                      {p.stock} units
-                    </span>
-                  </td>
-                  <td style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>Edit</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p._id)}>Remove</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+  {loading ? (
+    <div className="empty-state">Loading inventory...</div>
+  ) : filteredProducts.length === 0 ? (
+    <div className="empty-state">
+      {searchQuery ? `No products match "${searchQuery}"` : 'No products found.'}
+    </div>
+  ) : (
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>SKU</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredProducts.map(p => (
+          <tr key={p._id}>
+            <td>{p.name}</td>
+            <td className="mono text-muted">{p.sku}</td>
+            <td><span className="tag tag-muted">{p.category}</span></td>
+            <td className="mono">{formatCurrency(p.price)}</td>
+            <td>
+              <div className="stock-control">
+                <button
+                  className="stock-control__btn"
+                  onClick={() => handleStockChange(p._id, -1)}
+                  disabled={p.stock === 0 || stockUpdating[p._id]}
+                  aria-label="Decrease stock"
+                >
+                  −
+                </button>
+                <span className={`tag ${p.stock === 0 ? 'tag-red' : p.stock <= p.lowStockThreshold ? 'tag-amber' : 'tag-green'}`}>
+                  {p.stock} units
+                </span>
+                <button
+                  className="stock-control__btn"
+                  onClick={() => handleStockChange(p._id, 1)}
+                  disabled={stockUpdating[p._id]}
+                  aria-label="Increase stock"
+                >
+                  +
+                </button>
+              </div>
+            </td>
+            <td style={{ display: 'flex', gap: 8 }}>
+              <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>Edit</button>
+              <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p._id)}>Remove</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</div>
     </div>
   );
 };

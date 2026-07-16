@@ -8,3 +8,39 @@
   font-weight: 700;
   margin-bottom: 16px;
 }
+.inventory-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-width: 400px;
+}
+
+.stock-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stock-control__btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-panel-raised);
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.stock-control__btn:hover:not(:disabled) {
+  border-color: var(--accent-cyan);
+}
+
+.stock-control__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
