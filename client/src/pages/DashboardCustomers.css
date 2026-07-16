@@ -1,0 +1,36 @@
+.customer-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-width: 460px;
+}
+
+.customer-profile {
+  padding: 20px;
+  margin-bottom: 24px;
+  max-width: 600px;
+}
+
+.customer-profile__row {
+  display: flex;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 14px;
+}
+
+.customer-profile__row:last-child {
+  border-bottom: none;
+}
+
+.customer-profile__row > span:first-child {
+  width: 100px;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.customer-orders-title {
+  font-size: 15px;
+  font-weight: 700;
+  padding: 16px 16px 0;
+}

@@ -13,7 +13,102 @@ router.get('/', protect, authorize('admin'), async (req, res, next) => {
     next(err);
   }
 });
+// @desc Get all customers with order stats (admin)
+// @route GET /api/users/customers
+router.get('/customers', protect, authorize('admin'), async (req, res, next) => {
+  try {
+    const Order = require('../models/Order');
+    const { keyword } = req.query;
 
+    const userQuery = { role: 'customer' };
+    if (keyword) {
+      userQuery.$or = [
+        { name: { $regex: keyword, $options: 'i' } },
+        { email: { $regex: keyword, $options: 'i' } },
+        { phone: { $regex: keyword, $options: 'i' } }
+      ];
+    }
+
+    const customers = await User.find(userQuery).select('-password').sort({ createdAt: -1 });
+
+    // Get order stats for each customer in one aggregation
+    const stats = await Order.aggregate([
+      { $match: { orderStatus: { $ne: 'cancelled' } } },
+      {
+        $group: {
+          _id: '$customer',
+          totalOrders: { $sum: 1 },
+          totalSpent: { $sum: '$grandTotal' },
+          creditOutstanding: {
+            $sum: {
+              $cond: [
+                { $in: ['$payment.status', ['unpaid', 'partial', 'overdue']] },
+                '$payment.amountDue',
+                0
+              ]
+            }
+          },
+          lastOrderDate: { $max: '$createdAt' }
+        }
+      }
+    ]);
+
+    const statsMap = {};
+    stats.forEach(s => {
+      statsMap[s._id.toString()] = s;
+    });
+
+    const enriched = customers.map(c => {
+      const s = statsMap[c._id.toString()];
+      return {
+        ...c.toObject(),
+        totalOrders: s?.totalOrders || 0,
+        totalSpent: s?.totalSpent || 0,
+        creditOutstanding: s?.creditOutstanding || 0,
+        lastOrderDate: s?.lastOrderDate || null
+      };
+    });
+
+    res.json(enriched);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// @desc Get single customer with full order history (admin)
+// @route GET /api/users/customers/:id
+router.get('/customers/:id', protect, authorize('admin'), async (req, res, next) => {
+  try {
+    const Order = require('../models/Order');
+
+    const customer = await User.findOne({ _id: req.params.id, role: 'customer' }).select('-password');
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found' });
+    }
+
+    const orders = await Order.find({ customer: req.params.id }).sort({ createdAt: -1 });
+
+    const totalSpent = orders
+      .filter(o => o.orderStatus !== 'cancelled')
+      .reduce((sum, o) => sum + o.grandTotal, 0);
+
+    const creditOutstanding = orders
+      .filter(o => ['unpaid', 'partial', 'overdue'].includes(o.payment.status))
+      .reduce((sum, o) => sum + o.payment.amountDue, 0);
+
+    res.json({
+      customer,
+      orders,
+      stats: {
+        totalOrders: orders.length,
+        totalSpent,
+        creditOutstanding
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
 // @desc Update user role/status (admin)
 router.put('/:id', protect, authorize('admin'), async (req, res, next) => {
   try {
