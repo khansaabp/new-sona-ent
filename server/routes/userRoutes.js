@@ -15,6 +15,45 @@ router.get('/', protect, authorize('admin'), async (req, res, next) => {
 });
 // @desc Get all customers with order stats (admin)
 // @route GET /api/users/customers
+
+// @desc Admin manually creates a customer
+// @route POST /api/users/customers
+router.post('/customers', protect, authorize('admin'), async (req, res, next) => {
+  try {
+    const { name, email, phone, password, address } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ message: 'Name and email are required' });
+    }
+
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing) {
+      return res.status(400).json({ message: 'A user with this email already exists' });
+    }
+
+    // If admin doesn't set a password, generate a random one
+    const finalPassword = password && password.length >= 6
+      ? password
+      : Math.random().toString(36).slice(-8);
+
+    const customer = await User.create({
+      name,
+      email: email.toLowerCase(),
+      phone,
+      address,
+      password: finalPassword,
+      role: 'customer'
+    });
+
+    res.status(201).json({
+      customer: customer.toSafeObject(),
+      temporaryPassword: password ? undefined : finalPassword
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/customers', protect, authorize('admin'), async (req, res, next) => {
   try {
     const Order = require('../models/Order');

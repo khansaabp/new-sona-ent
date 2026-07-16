@@ -6,8 +6,10 @@ const {
   updateOrderStatus,
   recordPayment,
   getCreditOutstanding,
-  updateInvoiceNumber
+  updateInvoiceNumber,
+  searchCustomers
 } = require('../controllers/orderController');
+
 const { protect, authorize } = require('../middleware/auth');
 
 const router = express.Router();
@@ -15,6 +17,7 @@ const router = express.Router();
 router.post('/', protect, createOrder);
 router.get('/', protect, getOrders);
 router.get('/meta/credit-outstanding', protect, authorize('admin', 'staff'), getCreditOutstanding);
+router.get('/meta/search-customers', protect, authorize('admin', 'staff'), searchCustomers);
 router.get('/:id', protect, getOrderById);
 router.put('/:id/status', protect, authorize('admin', 'staff'), updateOrderStatus);
 router.put('/:id/pay', protect, authorize('admin', 'staff'), recordPayment);

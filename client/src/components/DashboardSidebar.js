@@ -2,9 +2,9 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './DashboardSidebar.css';
-
 const links = [
   { to: '/dashboard', label: 'Overview', icon: '◧', exact: true },
+  { to: '/dashboard/billing', label: 'New Sale', icon: '⊕' },
   { to: '/dashboard/orders', label: 'Orders & Billing', icon: '▤' },
   { to: '/dashboard/credit', label: 'Credit Accounts', icon: '◔' },
   { to: '/dashboard/customers', label: 'Customers', icon: '◍' },

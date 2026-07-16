@@ -22,6 +22,7 @@ import DashboardCredit from './pages/DashboardCredit';
 import DashboardProducts from './pages/DashboardProducts';
 import DashboardCustomers from './pages/DashboardCustomers';
 import DashboardCustomerDetail from './pages/DashboardCustomerDetail';
+import DashboardBilling from './pages/DashboardBilling';
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
 <Route path="credit" element={<DashboardCredit />} />
 <Route path="customers" element={<DashboardCustomers />} />
 <Route path="customers/:id" element={<DashboardCustomerDetail />} />
+<Route path="billing" element={<DashboardBilling />} />
 <Route path="products" element={<DashboardProducts />} />
               </Route>
             </Routes>

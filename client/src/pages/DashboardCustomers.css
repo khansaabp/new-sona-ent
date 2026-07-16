@@ -34,3 +34,25 @@
   font-weight: 700;
   padding: 16px 16px 0;
 }
+.product-form {
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.product-form h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 700px) {
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+}

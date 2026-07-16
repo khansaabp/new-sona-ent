@@ -9,10 +9,10 @@ const Footer = () => (
         <span>New sona enterprises</span>
       </div>
       <p className="text-muted">
-        Consumer electronics, retail &amp; wholesale &mdash; tv, refrigerator, ac, washing machine and more.
+        Consumer electronics, retail &amp; wholesale &mdash; Email: sonaenterprises@gmail.com.
       </p>
       <div className="site-footer__meta text-muted mono">
-        GSTIN: 27ABCDE1234F1Z5 &middot; contact: 8483094199 &middot; &copy; {new Date().getFullYear()} New sona enterprises
+        Address: Nagar parishad complex, akola road, Hingoli 431513. &middot; contact: 8483094199 &middot; &copy; {new Date().getFullYear()} New sona enterprises
       </div>
     </div>
   </footer>

@@ -30,8 +30,19 @@ const createOrder = async (req, res, next) => {
       shippingAddress,
       notes,
       customerName,
-      customerPhone
+      customerPhone,
+      customerId // admin/staff can specify a different customer to bill on behalf of
     } = req.body;
+
+    // Determine which customer this order belongs to
+    let targetCustomer = req.user;
+    if (customerId && ['admin', 'staff'].includes(req.user.role)) {
+      const foundCustomer = await User.findById(customerId);
+      if (!foundCustomer) {
+        return res.status(404).json({ message: 'Selected customer not found' });
+      }
+      targetCustomer = foundCustomer;
+    }
 
     if (!items || items.length === 0) {
       return res.status(400).json({ message: 'No order items provided' });
@@ -97,9 +108,9 @@ taxAmount += lineTax;
 
     const order = await Order.create({
       invoiceNumber,
-      customer: req.user._id,
-      customerName: customerName || req.user.name,
-      customerPhone: customerPhone || req.user.phone,
+      customer: targetCustomer._id,
+      customerName: customerName || targetCustomer.name,
+      customerPhone: customerPhone || targetCustomer.phone,
       items: orderItems,
       subtotal: Math.round(subtotal * 100) / 100,
       taxAmount: Math.round(taxAmount * 100) / 100,
@@ -284,6 +295,32 @@ const updateInvoiceNumber = async (req, res, next) => {
     next(err);
   }
 };
+// @desc    Search customers to bill on behalf of (admin/staff)
+// @route   GET /api/orders/meta/search-customers?keyword=
+// @access  Private/Admin/Staff
+const searchCustomers = async (req, res, next) => {
+  try {
+    const { keyword } = req.query;
+    if (!keyword || keyword.trim().length < 2) {
+      return res.json([]);
+    }
+
+    const customers = await User.find({
+      role: 'customer',
+      $or: [
+        { name: { $regex: keyword, $options: 'i' } },
+        { email: { $regex: keyword, $options: 'i' } },
+        { phone: { $regex: keyword, $options: 'i' } }
+      ]
+    })
+      .select('name email phone address')
+      .limit(10);
+
+    res.json(customers);
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   createOrder,
@@ -292,5 +329,6 @@ module.exports = {
   updateOrderStatus,
   recordPayment,
   getCreditOutstanding,
-  updateInvoiceNumber
+  updateInvoiceNumber,
+   searchCustomers
 };
