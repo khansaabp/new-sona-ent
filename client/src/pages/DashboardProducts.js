@@ -22,7 +22,7 @@ const DashboardProducts = () => {
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
 const [filterLowStock, setFilterLowStock] = useState(false);
-const [filterLowStock, setFilterLowStock] = useState(false);
+// const [filterLowStock, setFilterLowStock] = useState(false);
 const [searchQuery, setSearchQuery] = useState('');
 const [stockUpdating, setStockUpdating] = useState({});
 const [imageFile, setImageFile] = useState(null);
