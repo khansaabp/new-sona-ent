@@ -231,11 +231,11 @@ if (!order) return <div className="page-container empty-state">Loading invoice..
       <td className="mono">{item.quantity}</td>
       <td className="mono">
         {formatCurrency(item.price)}
-        {item.priceOverridden && item.originalPrice && (
+        {/* {item.priceOverridden && item.originalPrice && (
           <div className="text-muted" style={{ fontSize: 11, textDecoration: 'line-through' }}>
             {formatCurrency(item.originalPrice)}
           </div>
-        )}
+        )} */}
       </td>
       <td className="mono">{item.taxRate}%</td>
       <td className="mono">{formatCurrency(item.lineTotal)}</td>
