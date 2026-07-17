@@ -15,12 +15,33 @@ const DashboardCustomerDetail = () => {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const [notes, setNotes] = useState('');
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesSaved, setNotesSaved] = useState(false);
 
-  useEffect(() => {
-    api.get(`/users/customers/${id}`)
-      .then(res => setData(res.data))
-      .catch(err => setError(err.response?.data?.message || 'Customer not found'));
-  }, [id]);
+useEffect(() => {
+  api.get(`/users/customers/${id}`)
+    .then(res => {
+      setData(res.data);
+      setNotes(res.data.customer.adminNotes || '');
+    })
+    .catch(err => setError(err.response?.data?.message || 'Customer not found'));
+}, [id]);
+const handleSaveNotes = async () => {
+  setSavingNotes(true);
+  setNotesSaved(false);
+  try {
+    await api.put(`/users/customers/${id}/notes`, { adminNotes: notes });
+    setNotesSaved(true);
+    setEditingNotes(false);
+    setTimeout(() => setNotesSaved(false), 2500);
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to save notes');
+  } finally {
+    setSavingNotes(false);
+  }
+};
 
   if (error) return <div className="empty-state">{error}</div>;
   if (!data) return <div className="empty-state">Loading customer...</div>;
@@ -47,23 +68,66 @@ const DashboardCustomerDetail = () => {
 </div>
 
       <div className="customer-profile card">
-        <div className="customer-profile__row">
-          <span className="text-muted">Email</span>
-          <span>{customer.email}</span>
-        </div>
-        <div className="customer-profile__row">
-          <span className="text-muted">Phone</span>
-          <span>{customer.phone || 'Not provided'}</span>
-        </div>
-        <div className="customer-profile__row">
-          <span className="text-muted">Address</span>
-          <span>
-            {customer.address?.street
-              ? `${customer.address.street}, ${customer.address.city}, ${customer.address.state} ${customer.address.pincode}`
-              : 'Not provided'}
-          </span>
-        </div>
+  <div className="customer-profile__row">
+    <span className="text-muted">Email</span>
+    <span>{customer.email}</span>
+  </div>
+  <div className="customer-profile__row">
+    <span className="text-muted">Phone</span>
+    <span>{customer.phone || 'Not provided'}</span>
+  </div>
+  <div className="customer-profile__row">
+    <span className="text-muted">Address</span>
+    <span>
+      {customer.address?.street
+        ? `${customer.address.street}, ${customer.address.city}, ${customer.address.state} ${customer.address.pincode}`
+        : 'Not provided'}
+    </span>
+  </div>
+</div>
+
+<div className="card admin-notes-card">
+  <div className="admin-notes-header">
+    <div>
+      <h2 className="admin-notes-title">Admin Notes</h2>
+      <span className="tag tag-red mono" style={{ fontSize: 10 }}>Admin only · Not visible to customer</span>
+    </div>
+    {!editingNotes && (
+      <button className="btn btn-ghost btn-sm" onClick={() => setEditingNotes(true)}>
+        {notes ? 'Edit' : '+ Add note'}
+      </button>
+    )}
+  </div>
+
+  {notesSaved && <div className="success-banner">Notes saved</div>}
+
+  {editingNotes ? (
+    <div>
+      <textarea
+        className="textarea"
+        rows={5}
+        value={notes}
+        onChange={e => setNotes(e.target.value)}
+        placeholder="e.g. Prefers phone contact, always pays credit invoices on time, requested discount on bulk orders..."
+      />
+      <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+        <button className="btn btn-primary btn-sm" onClick={handleSaveNotes} disabled={savingNotes}>
+          {savingNotes ? 'Saving...' : 'Save notes'}
+        </button>
+        <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => { setNotes(customer.adminNotes || ''); setEditingNotes(false); }}
+        >
+          Cancel
+        </button>
       </div>
+    </div>
+  ) : (
+    <p className="admin-notes-text">
+      {notes ? notes : <span className="text-muted">No notes added yet.</span>}
+    </p>
+  )}
+</div>
 
       <div className="stat-grid">
         <StatCard label="Total Orders" value={stats.totalOrders} tone="cyan" />

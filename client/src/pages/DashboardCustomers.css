@@ -56,3 +56,29 @@
     grid-template-columns: 1fr;
   }
 }
+.admin-notes-card {
+  padding: 20px;
+  margin-bottom: 24px;
+  max-width: 600px;
+  border: 1px dashed var(--accent-red);
+}
+
+.admin-notes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.admin-notes-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.admin-notes-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}

@@ -8,14 +8,15 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 6 },
     phone: { type: String, trim: true },
     role: { type: String, enum: ['customer', 'staff', 'admin'], default: 'customer' },
-    address: {
-      street: String,
-      city: String,
-      state: String,
-      pincode: String,
-      country: { type: String, default: 'India' }
-    },
-    isActive: { type: Boolean, default: true }
+   address: {
+  street: String,
+  city: String,
+  state: String,
+  pincode: String,
+  country: { type: String, default: 'India' }
+},
+isActive: { type: Boolean, default: true },
+adminNotes: { type: String, default: '' }
   },
   { timestamps: true }
 );

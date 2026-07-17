@@ -165,4 +165,23 @@ router.put('/:id', protect, authorize('admin'), async (req, res, next) => {
   }
 });
 
+// @desc Update admin notes for a customer (admin only)
+// @route PUT /api/users/customers/:id/notes
+router.put('/customers/:id/notes', protect, authorize('admin'), async (req, res, next) => {
+  try {
+    const { adminNotes } = req.body;
+
+    const customer = await User.findOne({ _id: req.params.id, role: 'customer' });
+    if (!customer) {
+      return res.status(404).json({ message: 'Customer not found' });
+    }
+
+    customer.adminNotes = adminNotes || '';
+    await customer.save();
+
+    res.json({ message: 'Notes updated', adminNotes: customer.adminNotes });
+  } catch (err) {
+    next(err);
+  }
+});
 module.exports = router;
