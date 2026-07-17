@@ -80,3 +80,24 @@
     grid-template-columns: 1fr;
   }
 }
+.price-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.price-edit__input {
+  width: 80px;
+  padding: 4px 8px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
+  color: var(--text-primary);
+}
+
+.price-edit__input:focus {
+  border-color: var(--accent-amber);
+  outline: none;
+}

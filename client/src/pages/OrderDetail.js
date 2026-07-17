@@ -216,18 +216,32 @@ if (!order) return <div className="page-container empty-state">Loading invoice..
               <th>Line Total</th>
             </tr>
           </thead>
-          <tbody>
-            {order.items.map(item => (
-              <tr key={item.sku}>
-                <td>{item.name}</td>
-                <td className="mono text-muted">{item.sku}</td>
-                <td className="mono">{item.quantity}</td>
-                <td className="mono">{formatCurrency(item.price)}</td>
-                <td className="mono">{item.taxRate}%</td>
-                <td className="mono">{formatCurrency(item.lineTotal)}</td>
-              </tr>
-            ))}
-          </tbody>
+       <tbody>
+  {order.items.map(item => (
+    <tr key={item.sku}>
+      <td>
+        {item.name}
+        {item.priceOverridden && (
+          <span className="tag tag-amber" style={{ marginLeft: 8, fontSize: 10 }}>
+            Custom price
+          </span>
+        )}
+      </td>
+      <td className="mono text-muted">{item.sku}</td>
+      <td className="mono">{item.quantity}</td>
+      <td className="mono">
+        {formatCurrency(item.price)}
+        {item.priceOverridden && item.originalPrice && (
+          <div className="text-muted" style={{ fontSize: 11, textDecoration: 'line-through' }}>
+            {formatCurrency(item.originalPrice)}
+          </div>
+        )}
+      </td>
+      <td className="mono">{item.taxRate}%</td>
+      <td className="mono">{formatCurrency(item.lineTotal)}</td>
+    </tr>
+  ))}
+</tbody>
         </table>
         <div className="invoice__gst-table">
   <h4 className="invoice__gst-title">GST Breakdown</h4>

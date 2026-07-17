@@ -51,9 +51,10 @@ const createOrder = async (req, res, next) => {
       return res.status(400).json({ message: 'Payment method is required' });
     }
 
-    let subtotal = 0;
+let subtotal = 0;
     let taxAmount = 0;
     const orderItems = [];
+    const isStaffOrAdmin = ['admin', 'staff'].includes(req.user.role);
 
     for (const item of items) {
       const product = await Product.findById(item.product);
@@ -66,11 +67,23 @@ const createOrder = async (req, res, next) => {
         });
       }
 
-      const lineTotal = product.price * item.quantity;
-const lineTax = 0; // GST already included in price
+      // Only admin/staff can override price (e.g. negotiated deals, POS billing).
+      // Customers always pay the catalog price — item.overridePrice is ignored for them.
+      let finalPrice = product.price;
+      if (isStaffOrAdmin && item.overridePrice !== undefined && item.overridePrice !== null) {
+        const override = Number(item.overridePrice);
+        if (isNaN(override) || override < 0) {
+          return res.status(400).json({ message: `Invalid custom price for ${product.name}` });
+        }
+        finalPrice = Math.round(override * 100) / 100;
+      }
 
-subtotal += lineTotal;
-taxAmount += lineTax;
+      const lineTotal = finalPrice * item.quantity;
+      const lineTax = 0; // GST already included in price
+      const priceWasOverridden = finalPrice !== product.price;
+
+      subtotal += lineTotal;
+      taxAmount += lineTax;
 
       orderItems.push({
         product: product._id,
@@ -78,7 +91,10 @@ taxAmount += lineTax;
         sku: product.sku,
         image: product.images?.[0] || '',
         quantity: item.quantity,
-        price: product.price,
+        price: finalPrice,
+        originalPrice: product.price,
+        priceOverridden: priceWasOverridden,
+        overriddenBy: priceWasOverridden ? req.user._id : undefined,
         taxRate: product.taxRate,
         lineTotal
       });

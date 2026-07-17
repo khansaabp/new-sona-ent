@@ -63,21 +63,21 @@ const DashboardBilling = () => {
     return () => clearTimeout(timer);
   }, [productSearch]);
 
-  const addToCart = (product) => {
-    setCartItems(prev => {
-      const existing = prev.find(i => i.product._id === product._id);
-      if (existing) {
-        return prev.map(i =>
-          i.product._id === product._id
-            ? { ...i, quantity: Math.min(i.quantity + 1, product.stock) }
-            : i
-        );
-      }
-      return [...prev, { product, quantity: 1 }];
-    });
-    setProductSearch('');
-    setProductResults([]);
-  };
+const addToCart = (product) => {
+  setCartItems(prev => {
+    const existing = prev.find(i => i.product._id === product._id);
+    if (existing) {
+      return prev.map(i =>
+        i.product._id === product._id
+          ? { ...i, quantity: Math.min(i.quantity + 1, product.stock) }
+          : i
+      );
+    }
+    return [...prev, { product, quantity: 1, customPrice: product.price }];
+  });
+  setProductSearch('');
+  setProductResults([]);
+};
 
   const updateQty = (productId, qty) => {
     setCartItems(prev =>
@@ -86,14 +86,23 @@ const DashboardBilling = () => {
         .filter(i => i.quantity > 0)
     );
   };
+const updatePrice = (productId, price) => {
+  setCartItems(prev =>
+    prev.map(i => (i.product._id === productId ? { ...i, customPrice: price } : i))
+  );
+};
 
+const resetPrice = (productId) => {
+  setCartItems(prev =>
+    prev.map(i => (i.product._id === productId ? { ...i, customPrice: i.product.price } : i))
+  );
+};
   const removeItem = (productId) => {
     setCartItems(prev => prev.filter(i => i.product._id !== productId));
   };
 
-  const subtotal = cartItems.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
-  const grandTotal = Math.max(0, subtotal - Number(discount || 0));
-
+const subtotal = cartItems.reduce((sum, i) => sum + (i.customPrice ?? i.product.price) * i.quantity, 0);
+const grandTotal = Math.max(0, subtotal - Number(discount || 0));
   const handleGenerateInvoice = async () => {
     setError('');
     if (!selectedCustomer) {
@@ -107,11 +116,15 @@ const DashboardBilling = () => {
 
     setLoading(true);
     try {
-      const payload = {
-        customerId: selectedCustomer._id,
-        customerName: selectedCustomer.name,
-        customerPhone: selectedCustomer.phone,
-        items: cartItems.map(i => ({ product: i.product._id, quantity: i.quantity })),
+     const payload = {
+  customerId: selectedCustomer._id,
+  customerName: selectedCustomer.name,
+  customerPhone: selectedCustomer.phone,
+  items: cartItems.map(i => ({
+    product: i.product._id,
+    quantity: i.quantity,
+    overridePrice: i.customPrice !== i.product.price ? i.customPrice : undefined
+  })),
         payment: {
           method,
           creditTermsDays: method === 'credit' ? Number(creditTermsDays) : undefined,
@@ -206,26 +219,53 @@ const DashboardBilling = () => {
                 ))}
               </div>
             )}
-
-            {cartItems.length > 0 && (
-              <div className="billing-cart">
-                {cartItems.map(({ product, quantity }) => (
-                  <div className="billing-cart-item" key={product._id}>
-                    <div className="billing-cart-item__info">
-                      <div style={{ fontWeight: 600 }}>{product.name}</div>
-                      <div className="text-muted mono" style={{ fontSize: 12 }}>{formatCurrency(product.price)} / unit</div>
-                    </div>
-                    <div className="qty-stepper">
-                      <button onClick={() => updateQty(product._id, quantity - 1)}>−</button>
-                      <span className="mono">{quantity}</span>
-                      <button onClick={() => updateQty(product._id, Math.min(product.stock, quantity + 1))}>+</button>
-                    </div>
-                    <div className="mono" style={{ minWidth: 90, textAlign: 'right' }}>{formatCurrency(product.price * quantity)}</div>
-                    <button className="btn btn-ghost btn-sm" onClick={() => removeItem(product._id)}>Remove</button>
-                  </div>
-                ))}
-              </div>
-            )}
+{cartItems.length > 0 && (
+  <div className="billing-cart">
+    {cartItems.map(({ product, quantity, customPrice }) => {
+      const priceChanged = customPrice !== product.price;
+      return (
+        <div className="billing-cart-item" key={product._id}>
+          <div className="billing-cart-item__info">
+            <div style={{ fontWeight: 600 }}>{product.name}</div>
+            <div className="price-edit">
+              <span className="text-muted mono" style={{ fontSize: 12 }}>₹</span>
+              <input
+                type="number"
+                min="0"
+                className="price-edit__input mono"
+                value={customPrice}
+                onChange={e => updatePrice(product._id, Number(e.target.value))}
+              />
+              <span className="text-muted mono" style={{ fontSize: 12 }}>/ unit</span>
+              {priceChanged && (
+                <>
+                  <span className="tag tag-amber" style={{ fontSize: 10 }}>Custom price</span>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    style={{ padding: '2px 8px', fontSize: 11 }}
+                    onClick={() => resetPrice(product._id)}
+                    title={`Reset to catalog price ₹${product.price}`}
+                  >
+                    Reset
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="qty-stepper">
+            <button onClick={() => updateQty(product._id, quantity - 1)}>−</button>
+            <span className="mono">{quantity}</span>
+            <button onClick={() => updateQty(product._id, Math.min(product.stock, quantity + 1))}>+</button>
+          </div>
+          <div className="mono" style={{ minWidth: 90, textAlign: 'right' }}>
+            {formatCurrency(customPrice * quantity)}
+          </div>
+          <button className="btn btn-ghost btn-sm" onClick={() => removeItem(product._id)}>Remove</button>
+        </div>
+      );
+    })}
+  </div>
+)}
           </section>
 
           {/* Step 3: Payment */}

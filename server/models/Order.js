@@ -7,7 +7,10 @@ const orderItemSchema = new mongoose.Schema(
     sku: { type: String, required: true },
     image: { type: String },
     quantity: { type: Number, required: true, min: 1 },
-    price: { type: Number, required: true }, // unit price at time of sale
+    price: { type: Number, required: true }, // unit price at time of sale (may be overridden)
+    originalPrice: { type: Number }, // catalog price at time of sale, for reference
+    priceOverridden: { type: Boolean, default: false },
+    overriddenBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     taxRate: { type: Number, required: true, default: 18 },
     lineTotal: { type: Number, required: true } // qty * price (excl tax)
   },
