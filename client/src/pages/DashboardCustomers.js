@@ -4,6 +4,7 @@ import api from '../utils/api';
 import { formatCurrency, formatDate } from '../utils/format';
 import StatCard from '../components/StatCard';
 import './DashboardCustomers.css';
+import { exportCustomersToExcel, exportCustomersToPDF } from '../utils/exportData';
 
 const emptyCustomerForm = { name: '', email: '', phone: '', password: '', street: '', city: '', state: '', pincode: '' };
 
@@ -84,12 +85,26 @@ const handleAddCustomer = async (e) => {
 
   return (
     <div>
-    <div className="dash-header">
+<div className="dash-header">
   <div>
     <h1>Customers</h1>
     <p className="text-muted">{totalCustomers} registered customers</p>
   </div>
-  <div style={{ display: 'flex', gap: 8 }}>
+  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+    <button
+      className="btn btn-ghost"
+      onClick={() => exportCustomersToExcel(customers)}
+      disabled={customers.length === 0}
+    >
+      ⬇ Export Excel
+    </button>
+    <button
+      className="btn btn-ghost"
+      onClick={() => exportCustomersToPDF(customers)}
+      disabled={customers.length === 0}
+    >
+      ⬇ Export PDF
+    </button>
     <Link to="/dashboard/billing" className="btn btn-amber">+ New sale (bill customer)</Link>
     <button className="btn btn-primary" onClick={() => { setShowAddForm(v => !v); setAddError(''); setAddSuccess(''); }}>
       + Add customer

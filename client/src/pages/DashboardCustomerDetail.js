@@ -4,6 +4,7 @@ import api from '../utils/api';
 import { formatCurrency, formatDate, formatDateTime, getPaymentMethodLabel } from '../utils/format';
 import StatCard from '../components/StatCard';
 import './DashboardCustomers.css';
+import { exportCustomerProfileToPDF } from '../utils/exportData';
 
 const statusTag = (status) => {
   const map = { paid: 'tag-green', partial: 'tag-amber', unpaid: 'tag-muted', overdue: 'tag-red' };
@@ -29,16 +30,21 @@ const DashboardCustomerDetail = () => {
   return (
     <div>
       <Link to="/dashboard/customers" className="text-muted" style={{ fontSize: 13 }}>&larr; All customers</Link>
-
-      <div className="dash-header" style={{ marginTop: 12 }}>
-        <div>
-          <h1>{customer.name}</h1>
-          <p className="text-muted">
-            Customer since {formatDate(customer.createdAt)}
-            {!customer.isActive && <span className="tag tag-red" style={{ marginLeft: 8 }}>Inactive</span>}
-          </p>
-        </div>
-      </div>
+<div className="dash-header" style={{ marginTop: 12 }}>
+  <div>
+    <h1>{customer.name}</h1>
+    <p className="text-muted">
+      Customer since {formatDate(customer.createdAt)}
+      {!customer.isActive && <span className="tag tag-red" style={{ marginLeft: 8 }}>Inactive</span>}
+    </p>
+  </div>
+  <button
+    className="btn btn-ghost"
+    onClick={() => exportCustomerProfileToPDF(customer, orders, stats)}
+  >
+    ⬇ Download profile (PDF)
+  </button>
+</div>
 
       <div className="customer-profile card">
         <div className="customer-profile__row">
