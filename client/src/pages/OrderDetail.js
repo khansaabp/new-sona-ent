@@ -223,7 +223,7 @@ if (!order) return <div className="page-container empty-state">Loading invoice..
         {item.name}
         {item.priceOverridden && (
           <span className="tag tag-amber" style={{ marginLeft: 8, fontSize: 10 }}>
-            Custom price
+            .
           </span>
         )}
       </td>
