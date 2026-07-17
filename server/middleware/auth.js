@@ -32,4 +32,20 @@ const authorize = (...roles) => {
   };
 };
 
-module.exports = { protect, authorize };
+// Attaches req.user if a valid token is present, but does NOT block the request if missing/invalid.
+// Used on public routes where staff/admin get extra visibility (e.g. viewing unapproved products).
+const optionalAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer')) {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id).select('-password');
+      if (user) req.user = user;
+    }
+  } catch (err) {
+    // Invalid/expired token on a public route — just proceed as guest
+  }
+  next();
+};
+module.exports = { protect, authorize, optionalAuth };

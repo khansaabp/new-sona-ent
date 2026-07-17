@@ -30,7 +30,10 @@ const productSchema = new mongoose.Schema(
     images: [{ type: String }],
     specifications: { type: Map, of: String },
     warranty: { type: String, default: '1 Year' },
-    isActive: { type: Boolean, default: true },
+  isActive: { type: Boolean, default: true },
+isApproved: { type: Boolean, default: false },
+approvedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+approvedAt: { type: Date },
     rating: { type: Number, default: 0, min: 0, max: 5 },
     numReviews: { type: Number, default: 0 }
   },

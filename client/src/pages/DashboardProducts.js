@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { formatCurrency } from '../utils/format';
 import './DashboardProducts.css';
-
+import { useAuth } from '../context/AuthContext';
 const categories = [
   'Refrigerators', 'AC', 'washing machines', 'Audio', 'Wearables',
   'TVs & Displays', 'Inverter', 'cooking', 'Accessories', 'Home Appliances'
@@ -23,26 +23,30 @@ const DashboardProducts = () => {
   const [error, setError] = useState('');
 const [filterLowStock, setFilterLowStock] = useState(false);
 // const [filterLowStock, setFilterLowStock] = useState(false);
+const [filterPending, setFilterPending] = useState(false);
 const [searchQuery, setSearchQuery] = useState('');
 const [stockUpdating, setStockUpdating] = useState({});
 const [imageFile, setImageFile] = useState(null);
 const [imagePreview, setImagePreview] = useState('');
 const [uploadingImage, setUploadingImage] = useState(false);
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      if (filterLowStock) {
-        const { data } = await api.get('/products/meta/low-stock');
-        setProducts(data);
-      } else {
-        const { data } = await api.get('/products?limit=100');
-        setProducts(data.products);
-      }
-    } finally {
-      setLoading(false);
+const { user } = useAuth();
+const fetchProducts = async () => {
+  setLoading(true);
+  try {
+    if (filterLowStock) {
+      const { data } = await api.get('/products/meta/low-stock');
+      setProducts(data);
+    } else if (filterPending) {
+      const { data } = await api.get('/products/meta/pending-approval');
+      setProducts(data);
+    } else {
+      const { data } = await api.get('/products?limit=100&showAll=true');
+      setProducts(data.products);
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 const filteredProducts = products.filter(p => {
   if (!searchQuery.trim()) return true;
   const q = searchQuery.toLowerCase();
@@ -78,10 +82,10 @@ const handleStockChange = async (productId, delta) => {
     setStockUpdating(prev => ({ ...prev, [productId]: false }));
   }
 };
-  useEffect(() => {
-    fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterLowStock]);
+ useEffect(() => {
+  fetchProducts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [filterLowStock, filterPending]);
 
 const openCreate = () => {
   setForm(emptyForm);
@@ -165,6 +169,23 @@ const handleImageUpload = async () => {
     fetchProducts();
   };
 
+  const handleApprove = async (id) => {
+  try {
+    await api.put(`/products/${id}/approve`);
+    fetchProducts();
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to approve product');
+  }
+};
+
+const handleReject = async (id) => {
+  try {
+    await api.put(`/products/${id}/reject`);
+    fetchProducts();
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to hide product');
+  }
+};
   return (
     <div>
       <div className="dash-header">
@@ -173,9 +194,20 @@ const handleImageUpload = async () => {
     <p className="text-muted">{filteredProducts.length} products {filterLowStock ? '(low stock)' : ''}</p>
   </div>
   <div style={{ display: 'flex', gap: 8 }}>
-    <button className={`btn btn-sm ${filterLowStock ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setFilterLowStock(v => !v)}>
-      Low stock only
-    </button>
+   <button
+  className={`btn btn-sm ${filterLowStock ? 'btn-primary' : 'btn-ghost'}`}
+  onClick={() => { setFilterLowStock(v => !v); setFilterPending(false); }}
+>
+  Low stock only
+</button>
+{user?.role === 'admin' && (
+  <button
+    className={`btn btn-sm ${filterPending ? 'btn-amber' : 'btn-ghost'}`}
+    onClick={() => { setFilterPending(v => !v); setFilterLowStock(false); }}
+  >
+    Pending approval
+  </button>
+)}
     <button className="btn btn-primary" onClick={openCreate}>+ Add product</button>
   </div>
 </div>
@@ -315,66 +347,63 @@ const handleImageUpload = async () => {
     </div>
   ) : (
     <table>
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>SKU</th>
-          <th>Category</th>
-          <th>Price</th>
-          <th>Stock</th>
-          <th></th>
-        </tr>
-      </thead>
+ <thead>
+  <tr>
+    <th>Product</th>
+    <th>SKU</th>
+    <th>Category</th>
+    <th>Price</th>
+    <th>Stock</th>
+    <th>Approval</th>
+    <th></th>
+  </tr>
+</thead>
       <tbody>
         {filteredProducts.map(p => (
-          <tr key={p._id}>
-            <td>{p.name}</td>
-            <td className="mono text-muted">{p.sku}</td>
-            <td><span className="tag tag-muted">{p.category}</span></td>
-            <td className="mono">{formatCurrency(p.price)}</td>
-            <td>
-          <td>
-  <div className="stock-control">
-    <button
-      className="stock-control__btn"
-      onClick={() => handleStockChange(p._id, -1)}
-      disabled={p.stock === 0 || stockUpdating[p._id]}
-      aria-label="Decrease stock"
-    >
-      −
-    </button>
-    <span className={`tag ${p.stock === 0 ? 'tag-red' : p.stock <= p.lowStockThreshold ? 'tag-amber' : 'tag-green'}`}>
-      {p.stock} units
-    </span>
-    <button
-      className="stock-control__btn"
-      onClick={() => handleStockChange(p._id, 1)}
-      disabled={stockUpdating[p._id]}
-      aria-label="Increase stock"
-    >
-      +
-    </button>
-    <button
-      className="btn btn-ghost btn-sm"
-      style={{ marginLeft: 4 }}
-      onClick={() => {
-        const qty = prompt(`Enter quantity to add/remove for ${p.name}\n(use negative number to remove, e.g. -5)`);
-        const num = parseInt(qty, 10);
-        if (!isNaN(num) && num !== 0) {
-          handleStockChange(p._id, num);
-        }
-      }}
-    >
-      Bulk
-    </button>
-  </div>
-</td>
-            </td>
-            <td style={{ display: 'flex', gap: 8 }}>
-              <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>Edit</button>
-              <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p._id)}>Remove</button>
-            </td>
-          </tr>
+   <tr key={p._id}>
+  <td>{p.name}</td>
+  <td className="mono text-muted">{p.sku}</td>
+  <td><span className="tag tag-muted">{p.category}</span></td>
+  <td className="mono">{formatCurrency(p.price)}</td>
+  <td>
+    <div className="stock-control">
+      <button
+        className="stock-control__btn"
+        onClick={() => handleStockChange(p._id, -1)}
+        disabled={p.stock === 0 || stockUpdating[p._id]}
+        aria-label="Decrease stock"
+      >
+        −
+      </button>
+      <span className={`tag ${p.stock === 0 ? 'tag-red' : p.stock <= p.lowStockThreshold ? 'tag-amber' : 'tag-green'}`}>
+        {p.stock} units
+      </span>
+      <button
+        className="stock-control__btn"
+        onClick={() => handleStockChange(p._id, 1)}
+        disabled={stockUpdating[p._id]}
+        aria-label="Increase stock"
+      >
+        +
+      </button>
+    </div>
+  </td>
+  <td>
+    {p.isApproved
+      ? <span className="tag tag-green">Approved</span>
+      : <span className="tag tag-amber">Pending</span>
+    }
+  </td>
+  <td style={{ display: 'flex', gap: 8 }}>
+    {user?.role === 'admin' && (
+      p.isApproved
+        ? <button className="btn btn-ghost btn-sm" onClick={() => handleReject(p._id)}>Hide</button>
+        : <button className="btn btn-primary btn-sm" onClick={() => handleApprove(p._id)}>Approve</button>
+    )}
+    <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>Edit</button>
+    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p._id)}>Remove</button>
+  </td>
+</tr>
         ))}
       </tbody>
     </table>

@@ -5,9 +5,17 @@ const Product = require('../models/Product');
 // @access  Public
 const getProducts = async (req, res, next) => {
   try {
-    const { keyword, category, brand, minPrice, maxPrice, sort, page = 1, limit = 12 } = req.query;
+    const { keyword, category, brand, minPrice, maxPrice, sort, page = 1, limit = 12, showAll } = req.query;
+
+    const isStaffOrAdmin = req.user && ['admin', 'staff'].includes(req.user.role);
 
     const query = { isActive: true };
+
+    // Only show approved products to customers/guests.
+    // Staff/admin can pass ?showAll=true to see unapproved ones too (e.g. in dashboard).
+    if (!isStaffOrAdmin || showAll !== 'true') {
+      query.isApproved = true;
+    }
 
     if (keyword) {
       query.$text = { $search: keyword };
@@ -51,6 +59,13 @@ const getProductById = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // Block customers from viewing unapproved product detail pages directly via URL
+    const isStaffOrAdmin = req.user && ['admin', 'staff'].includes(req.user.role);
+    if ((!product.isApproved || !product.isActive) && !isStaffOrAdmin) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
     res.json(product);
   } catch (err) {
     next(err);
@@ -62,8 +77,8 @@ const getProductById = async (req, res, next) => {
 // @access  Public
 const getFilterMeta = async (req, res, next) => {
   try {
-    const categories = await Product.distinct('category');
-    const brands = await Product.distinct('brand');
+    const categories = await Product.distinct('category', { isActive: true, isApproved: true });
+    const brands = await Product.distinct('brand', { isActive: true, isApproved: true });
     res.json({ categories, brands });
   } catch (err) {
     next(err);
@@ -75,7 +90,18 @@ const getFilterMeta = async (req, res, next) => {
 // @access  Private/Admin
 const createProduct = async (req, res, next) => {
   try {
-    const product = await Product.create(req.body);
+    const payload = { ...req.body };
+
+    // Admin-created products auto-approve. Staff-created products need admin review.
+    if (req.user.role === 'admin') {
+      payload.isApproved = true;
+      payload.approvedBy = req.user._id;
+      payload.approvedAt = new Date();
+    } else {
+      payload.isApproved = false;
+    }
+
+    const product = await Product.create(payload);
     res.status(201).json(product);
   } catch (err) {
     next(err);
@@ -89,6 +115,12 @@ const updateProduct = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // If staff edits an already-approved product, send it back for admin re-review.
+    // Admin edits keep their own approval status as-is (they can toggle it directly if needed).
+    if (req.user.role === 'staff' && product.isApproved) {
+      req.body.isApproved = false;
+    }
 
     Object.assign(product, req.body);
     const updated = await product.save();
@@ -128,7 +160,55 @@ const getLowStock = async (req, res, next) => {
     next(err);
   }
 };
+// @desc    Get products pending approval
+// @route   GET /api/products/meta/pending-approval
+// @access  Private/Admin
+const getPendingApproval = async (req, res, next) => {
+  try {
+    const products = await Product.find({ isActive: true, isApproved: false }).sort({ createdAt: -1 });
+    res.json(products);
+  } catch (err) {
+    next(err);
+  }
+};
 
+// @desc    Approve a product (makes it visible to customers)
+// @route   PUT /api/products/:id/approve
+// @access  Private/Admin
+const approveProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    product.isApproved = true;
+    product.approvedBy = req.user._id;
+    product.approvedAt = new Date();
+    await product.save();
+
+    res.json({ message: `${product.name} approved and is now visible to customers`, product });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Reject / unapprove a product (hides it from customers)
+// @route   PUT /api/products/:id/reject
+// @access  Private/Admin
+const rejectProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    product.isApproved = false;
+    product.approvedBy = undefined;
+    product.approvedAt = undefined;
+    await product.save();
+
+    res.json({ message: `${product.name} hidden from customers`, product });
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
   getProducts,
   getProductById,
@@ -136,5 +216,8 @@ module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
-  getLowStock
+  getLowStock,
+  getPendingApproval,
+  approveProduct,
+  rejectProduct
 };

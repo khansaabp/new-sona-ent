@@ -7,15 +7,20 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-  getLowStock
+  getLowStock,
+  getPendingApproval,
+  approveProduct,
+  rejectProduct
 } = require('../controllers/productController');
-const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-router.get('/', getProducts);
+router.get('/', optionalAuth, getProducts);
 router.get('/meta/filters', getFilterMeta);
 router.get('/meta/low-stock', protect, authorize('admin', 'staff'), getLowStock);
+router.get('/meta/pending-approval', protect, authorize('admin'), getPendingApproval);
+router.get('/:id', optionalAuth, getProductById);
 // Image upload route
 router.post(
   '/upload-image',
@@ -31,10 +36,12 @@ router.post(
     res.json({ imageUrl });
   }
 );
-router.get('/:id', getProductById);
+// router.get('/:id', getProductById);
 
 router.post('/', protect, authorize('admin', 'staff'), createProduct);
 router.put('/:id', protect, authorize('admin', 'staff'), updateProduct);
 router.delete('/:id', protect, authorize('admin'), deleteProduct);
+router.put('/:id/approve', protect, authorize('admin'), approveProduct);
+router.put('/:id/reject', protect, authorize('admin'), rejectProduct);
 
 module.exports = router;
