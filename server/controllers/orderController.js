@@ -469,13 +469,3 @@ module.exports = {
   permanentlyDeleteOrder
 };
 
-module.exports = {
-  createOrder,
-  getOrders,
-  getOrderById,
-  updateOrderStatus,
-  recordPayment,
-  getCreditOutstanding,
-  updateInvoiceNumber,
-   searchCustomers
-};
