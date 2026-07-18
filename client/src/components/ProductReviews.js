@@ -24,7 +24,7 @@ useEffect(() => {
   if (user && user.role === 'customer') {
     api.get(`/products/${productId}/can-review`).then(res => setCanReviewData(res.data));
   }
-}, [fetchReviews, user]);
+}, [fetchReviews, user,productId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
