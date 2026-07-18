@@ -8,11 +8,11 @@ const User = require('../models/User');
 const getSummary = async (req, res, next) => {
   try {
     const [totalOrders, totalProducts, totalCustomers, revenueAgg, creditAgg, lowStockCount] = await Promise.all([
-      Order.countDocuments(),
+    Order.countDocuments({ isDeleted: { $ne: true } }),
       Product.countDocuments({ isActive: true }),
       User.countDocuments({ role: 'customer' }),
       Order.aggregate([
-        { $match: { orderStatus: { $ne: 'cancelled' } } },
+       { $match: { orderStatus: { $ne: 'cancelled' }, isDeleted: { $ne: true } } },
         { $group: { _id: null, total: { $sum: '$grandTotal' } } }
       ]),
       Order.aggregate([
@@ -31,13 +31,13 @@ const getSummary = async (req, res, next) => {
     startOfDay.setHours(0, 0, 0, 0);
 
     const [todayOrders, todayRevenueAgg, paymentBreakdown] = await Promise.all([
-      Order.countDocuments({ createdAt: { $gte: startOfDay } }),
+   Order.countDocuments({ createdAt: { $gte: startOfDay }, isDeleted: { $ne: true } }),
       Order.aggregate([
-        { $match: { createdAt: { $gte: startOfDay }, orderStatus: { $ne: 'cancelled' } } },
+        { $match: { createdAt: { $gte: startOfDay }, orderStatus: { $ne: 'cancelled' },isDeleted: { $ne: true }  } },
         { $group: { _id: null, total: { $sum: '$grandTotal' } } }
       ]),
       Order.aggregate([
-  { $match: { orderStatus: { $ne: 'cancelled' } } },
+  { $match: { orderStatus: { $ne: 'cancelled' }, isDeleted: { $ne: true } } },
   {
     $group: {
       _id: {
@@ -82,7 +82,7 @@ const getSalesTrend = async (req, res, next) => {
     startDate.setHours(0, 0, 0, 0);
 
     const trend = await Order.aggregate([
-      { $match: { createdAt: { $gte: startDate }, orderStatus: { $ne: 'cancelled' } } },
+      { $match: { createdAt: { $gte: startDate }, orderStatus: { $ne: 'cancelled' }, isDeleted: { $ne: true }  } },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
@@ -122,7 +122,7 @@ const getTopProducts = async (req, res, next) => {
     const limit = Number(req.query.limit) || 5;
 
     const top = await Order.aggregate([
-      { $match: { orderStatus: { $ne: 'cancelled' } } },
+      { $match: { orderStatus: { $ne: 'cancelled' }, isDeleted: { $ne: true } } },
       { $unwind: '$items' },
       {
         $group: {
@@ -149,7 +149,7 @@ const getTopProducts = async (req, res, next) => {
 const getCategoryBreakdown = async (req, res, next) => {
   try {
     const breakdown = await Order.aggregate([
-      { $match: { orderStatus: { $ne: 'cancelled' } } },
+      { $match: { orderStatus: { $ne: 'cancelled' }, isDeleted: { $ne: true } } },
       { $unwind: '$items' },
       {
         $lookup: {
@@ -182,8 +182,8 @@ const getCategoryBreakdown = async (req, res, next) => {
 const getRecentOrders = async (req, res, next) => {
   try {
     const limit = Number(req.query.limit) || 10;
-    const orders = await Order.find()
-      .sort({ createdAt: -1 })
+   const orders = await Order.find({ isDeleted: { $ne: true } })
+  .sort({ createdAt: -1 })
       .limit(limit)
       .select('invoiceNumber customerName grandTotal payment.method payment.status orderStatus createdAt');
     res.json(orders);

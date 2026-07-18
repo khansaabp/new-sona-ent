@@ -153,7 +153,7 @@ const getOrders = async (req, res, next) => {
   try {
  const { status, paymentStatus, paymentMethod, invoiceSearch, page = 1, limit = 10 } = req.query;
 
-const query = {};
+const query = { isDeleted: { $ne: true } };
 if (req.user.role === 'customer') {
   query.customer = req.user._id;
 }
@@ -184,6 +184,11 @@ const getOrderById = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id).populate('customer', 'name email phone address');
     if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    // Only admin can view deleted invoices directly (for recovery)
+    if (order.isDeleted && req.user.role !== 'admin') {
+      return res.status(404).json({ message: 'Order not found' });
+    }
 
     if (req.user.role === 'customer' && order.customer._id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized to view this order' });
@@ -244,10 +249,11 @@ const recordPayment = async (req, res, next) => {
 // @access  Private/Staff/Admin
 const getCreditOutstanding = async (req, res, next) => {
   try {
-    const orders = await Order.find({
-      'payment.method': 'credit',
-      'payment.status': { $in: ['unpaid', 'partial', 'overdue'] }
-    })
+  const orders = await Order.find({
+  isDeleted: { $ne: true },
+  'payment.method': 'credit',
+  'payment.status': { $in: ['unpaid', 'partial', 'overdue'] }
+})
       .sort({ 'payment.dueDate': 1 })
       .populate('customer', 'name email phone');
 
@@ -336,6 +342,131 @@ const searchCustomers = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+// @desc    Delete an invoice/order (admin only, soft delete + stock restoration)
+// @route   DELETE /api/orders/:id
+// @access  Private/Admin
+const deleteOrder = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.isDeleted) {
+      return res.status(400).json({ message: 'This invoice has already been deleted' });
+    }
+
+    // Restore stock for each item in the order
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity }
+      });
+    }
+
+    order.isDeleted = true;
+    order.deletedBy = req.user._id;
+    order.deletedAt = new Date();
+    order.deleteReason = reason || 'No reason provided';
+    await order.save();
+
+    res.json({ message: `Invoice ${order.invoiceNumber} deleted and stock restored` });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Get all deleted invoices (admin only, recovery view)
+// @route   GET /api/orders/meta/deleted
+// @access  Private/Admin
+const getDeletedOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ isDeleted: true })
+      .sort({ deletedAt: -1 })
+      .populate('customer', 'name email')
+      .populate('deletedBy', 'name');
+    res.json(orders);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Restore a deleted invoice (admin only)
+// @route   PUT /api/orders/:id/restore
+// @access  Private/Admin
+const restoreOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    if (!order.isDeleted) {
+      return res.status(400).json({ message: 'This invoice is not deleted' });
+    }
+
+    // Deduct stock again since we're restoring the sale
+    for (const item of order.items) {
+      const product = await Product.findById(item.product);
+      if (product && product.stock < item.quantity) {
+        return res.status(400).json({
+          message: `Cannot restore: insufficient stock for ${item.name}. Available: ${product.stock}, needed: ${item.quantity}`
+        });
+      }
+    }
+
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: -item.quantity }
+      });
+    }
+
+    order.isDeleted = false;
+    order.deletedBy = undefined;
+    order.deletedAt = undefined;
+    order.deleteReason = undefined;
+    await order.save();
+
+    res.json({ message: `Invoice ${order.invoiceNumber} restored`, order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Permanently delete an invoice (admin only, irreversible)
+// @route   DELETE /api/orders/:id/permanent
+// @access  Private/Admin
+const permanentlyDeleteOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    if (!order.isDeleted) {
+      return res.status(400).json({ message: 'Move to trash first before permanently deleting' });
+    }
+
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ message: `Invoice ${order.invoiceNumber} permanently deleted` });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  createOrder,
+  getOrders,
+  getOrderById,
+  updateOrderStatus,
+  recordPayment,
+  getCreditOutstanding,
+  updateInvoiceNumber,
+  searchCustomers,
+  deleteOrder,
+  getDeletedOrders,
+  restoreOrder,
+  permanentlyDeleteOrder
 };
 
 module.exports = {

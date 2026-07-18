@@ -8,7 +8,8 @@ const links = [
   { to: '/dashboard/orders', label: 'Orders & Billing', icon: '▤' },
   { to: '/dashboard/credit', label: 'Credit Accounts', icon: '◔' },
   { to: '/dashboard/customers', label: 'Customers', icon: '◍' },
-  { to: '/dashboard/products', label: 'Inventory', icon: '▣' }
+  { to: '/dashboard/products', label: 'Inventory', icon: '▣' },
+  { to: '/dashboard/deleted-orders', label: 'Deleted Invoices', icon: '🗑' }
 ];
 
 const DashboardSidebar = () => {

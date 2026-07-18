@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, formatDate, formatDateTime, getPaymentMethodLabel } from '../utils/format';
@@ -38,8 +38,12 @@ const calculateGSTBreakdown = (items) => {
 };
 
 const OrderDetail = () => {
-  const { id } = useParams();
-  const { user } = useAuth();
+ const { id } = useParams();
+const { user } = useAuth();
+const navigate = useNavigate();
+const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+const [deleteReason, setDeleteReason] = useState('');
+const [deleteLoading, setDeleteLoading] = useState(false);
   const [order, setOrder] = useState(null);
   const [error, setError] = useState('');
   const [payAmount, setPayAmount] = useState('');
@@ -99,7 +103,17 @@ if (!order) return <div className="page-container empty-state">Loading invoice..
       setPayLoading(false);
     }
   };
-
+const handleDeleteInvoice = async () => {
+  setDeleteLoading(true);
+  try {
+    await api.delete(`/orders/${id}`, { data: { reason: deleteReason } });
+    navigate('/dashboard/orders', { replace: true });
+  } catch (err) {
+    alert(err.response?.data?.message || 'Failed to delete invoice');
+  } finally {
+    setDeleteLoading(false);
+  }
+};
   return (
     <div className="page-container">
       <Link to="/orders" className="text-muted" style={{ fontSize: 13 }}>&larr; All orders</Link>
@@ -244,7 +258,7 @@ if (!order) return <div className="page-container empty-state">Loading invoice..
 </tbody>
         </table>
         <div className="invoice__gst-table">
-  <h4 className="invoice__gst-title">GST Breakdown</h4>
+  {/* <h4 className="invoice__gst-title">GST Breakdown</h4> */}
   <table>
     <thead>
       <tr>
@@ -363,9 +377,44 @@ if (!order) return <div className="page-container empty-state">Loading invoice..
           </div>
         )}
 
-        <div className="invoice__actions">
-          <button className="btn btn-ghost" onClick={() => window.print()}>Print invoice</button>
-        </div>
+       <div className="invoice__actions">
+  {user?.role === 'admin' && (
+    <button className="btn btn-danger" onClick={() => setShowDeleteConfirm(true)}>
+      Delete invoice
+    </button>
+  )}
+  <button className="btn btn-ghost" onClick={() => window.print()}>Print invoice</button>
+</div>
+
+{showDeleteConfirm && (
+  <div className="delete-modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+    <div className="delete-modal card" onClick={e => e.stopPropagation()}>
+      <h3>Delete Invoice {order.invoiceNumber}?</h3>
+      <p className="text-secondary" style={{ marginBottom: 16 }}>
+        This will remove the invoice from all reports and dashboards, and restore
+        {' '}{order.items.reduce((sum, i) => sum + i.quantity, 0)} unit(s) back to inventory stock.
+        The invoice can be recovered later from the Deleted Invoices page.
+      </p>
+      <div className="field">
+        <label className="label">Reason for deletion (optional)</label>
+        <input
+          className="input"
+          value={deleteReason}
+          onChange={e => setDeleteReason(e.target.value)}
+          placeholder="e.g. Duplicate entry, customer cancelled, billing error"
+        />
+      </div>
+      <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+        <button className="btn btn-danger" onClick={handleDeleteInvoice} disabled={deleteLoading}>
+          {deleteLoading ? 'Deleting...' : 'Yes, delete invoice'}
+        </button>
+        <button className="btn btn-ghost" onClick={() => setShowDeleteConfirm(false)}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );

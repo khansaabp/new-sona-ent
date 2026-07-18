@@ -66,7 +66,11 @@ const orderSchema = new mongoose.Schema(
       pincode: String,
       country: String
     },
-    notes: { type: String }
+   notes: { type: String },
+isDeleted: { type: Boolean, default: false },
+deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+deletedAt: { type: Date },
+deleteReason: { type: String }
   },
   { timestamps: true }
 );
