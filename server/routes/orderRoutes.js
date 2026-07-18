@@ -22,7 +22,7 @@ router.post('/', protect, createOrder);
 router.get('/', protect, getOrders);
 router.get('/meta/credit-outstanding', protect, authorize('admin', 'staff'), getCreditOutstanding);
 router.get('/meta/search-customers', protect, authorize('admin', 'staff'), searchCustomers);
-router.get('/meta/search-customers', protect, authorize('admin', 'staff'), searchCustomers);
+// router.get('/meta/search-customers', protect, authorize('admin', 'staff'), searchCustomers);
 router.get('/meta/deleted', protect, authorize('admin'), getDeletedOrders);
 router.delete('/:id', protect, authorize('admin'), deleteOrder);
 router.put('/:id/restore', protect, authorize('admin'), restoreOrder);
