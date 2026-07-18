@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { formatDate } from '../utils/format';
@@ -15,16 +15,16 @@ const ProductReviews = ({ productId }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchReviews = () => {
-    api.get(`/products/${productId}/reviews`).then(res => setReviews(res.data));
-  };
+const fetchReviews = useCallback(() => {
+  api.get(`/products/${productId}/reviews`).then(res => setReviews(res.data));
+}, [productId]);
 
-  useEffect(() => {
-    fetchReviews();
-    if (user && user.role === 'customer') {
-      api.get(`/products/${productId}/can-review`).then(res => setCanReviewData(res.data));
-    }
-  }, [productId, user]);
+useEffect(() => {
+  fetchReviews();
+  if (user && user.role === 'customer') {
+    api.get(`/products/${productId}/can-review`).then(res => setCanReviewData(res.data));
+  }
+}, [fetchReviews, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
