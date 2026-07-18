@@ -332,7 +332,11 @@ const searchCustomers = async (req, res, next) => {
       $or: [
         { name: { $regex: keyword, $options: 'i' } },
         { email: { $regex: keyword, $options: 'i' } },
-        { phone: { $regex: keyword, $options: 'i' } }
+        { phone: { $regex: keyword, $options: 'i' } },
+        { 'address.street': { $regex: keyword, $options: 'i' } },
+        { 'address.city': { $regex: keyword, $options: 'i' } },
+        { 'address.state': { $regex: keyword, $options: 'i' } },
+        { 'address.pincode': { $regex: keyword, $options: 'i' } }
       ]
     })
       .select('name email phone address')

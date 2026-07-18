@@ -166,32 +166,34 @@ const grandTotal = Math.max(0, subtotal - Number(discount || 0));
                 <div>
                   <div style={{ fontWeight: 700 }}>{selectedCustomer.name}</div>
                   <div className="text-muted" style={{ fontSize: 13 }}>
-                    {selectedCustomer.email} {selectedCustomer.phone && `· ${selectedCustomer.phone}`}
+                    {[selectedCustomer.email, selectedCustomer.phone].filter(Boolean).join(' · ') || 'No contact details'}
                   </div>
                 </div>
                 <button className="btn btn-ghost btn-sm" onClick={() => setSelectedCustomer(null)}>Change</button>
               </div>
             ) : (
               <div>
-                <input
-                  className="input"
-                  placeholder="Search customer by name, email, or phone..."
-                  value={customerSearch}
-                  onChange={e => setCustomerSearch(e.target.value)}
-                />
+               <input
+  className="input"
+  placeholder="Search by name, email, phone, or address..."
+  value={customerSearch}
+  onChange={e => setCustomerSearch(e.target.value)}
+/>
                 {searching && <div className="text-muted" style={{ fontSize: 13, marginTop: 8 }}>Searching...</div>}
                 {customerResults.length > 0 && (
                   <div className="search-results">
-                    {customerResults.map(c => (
-                      <button
-                        key={c._id}
-                        className="search-result-item"
-                        onClick={() => { setSelectedCustomer(c); setCustomerSearch(''); setCustomerResults([]); }}
-                      >
-                        <div style={{ fontWeight: 600 }}>{c.name}</div>
-                        <div className="text-muted" style={{ fontSize: 12 }}>{c.email} {c.phone && `· ${c.phone}`}</div>
-                      </button>
-                    ))}
+             {customerResults.map(c => (
+  <button
+    key={c._id}
+    className="search-result-item"
+    onClick={() => { setSelectedCustomer(c); setCustomerSearch(''); setCustomerResults([]); }}
+  >
+    <div style={{ fontWeight: 600 }}>{c.name}</div>
+    <div className="text-muted" style={{ fontSize: 12 }}>
+      {[c.email, c.phone].filter(Boolean).join(' · ') || 'No contact details'}
+    </div>
+  </button>
+))}
                   </div>
                 )}
               </div>

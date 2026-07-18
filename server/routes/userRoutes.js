@@ -18,17 +18,26 @@ router.get('/', protect, authorize('admin'), async (req, res, next) => {
 
 // @desc Admin manually creates a customer
 // @route POST /api/users/customers
+// @desc Admin manually creates a customer
+// @route POST /api/users/customers
 router.post('/customers', protect, authorize('admin'), async (req, res, next) => {
   try {
     const { name, email, phone, password, address } = req.body;
 
-    if (!name || !email) {
-      return res.status(400).json({ message: 'Name and email are required' });
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: 'Name is required' });
     }
 
-    const existing = await User.findOne({ email: email.toLowerCase() });
-    if (existing) {
-      return res.status(400).json({ message: 'A user with this email already exists' });
+    if (!email && !phone) {
+      return res.status(400).json({ message: 'Either email or phone number is required' });
+    }
+
+    // Only check for duplicates if an email was actually provided
+    if (email && email.trim()) {
+      const existing = await User.findOne({ email: email.toLowerCase().trim() });
+      if (existing) {
+        return res.status(400).json({ message: 'A user with this email already exists' });
+      }
     }
 
     // If admin doesn't set a password, generate a random one
@@ -37,8 +46,8 @@ router.post('/customers', protect, authorize('admin'), async (req, res, next) =>
       : Math.random().toString(36).slice(-8);
 
     const customer = await User.create({
-      name,
-      email: email.toLowerCase(),
+      name: name.trim(),
+      email: email && email.trim() ? email.toLowerCase().trim() : undefined,
       phone,
       address,
       password: finalPassword,
@@ -64,7 +73,11 @@ router.get('/customers', protect, authorize('admin'), async (req, res, next) => 
       userQuery.$or = [
         { name: { $regex: keyword, $options: 'i' } },
         { email: { $regex: keyword, $options: 'i' } },
-        { phone: { $regex: keyword, $options: 'i' } }
+        { phone: { $regex: keyword, $options: 'i' } },
+        { 'address.street': { $regex: keyword, $options: 'i' } },
+        { 'address.city': { $regex: keyword, $options: 'i' } },
+        { 'address.state': { $regex: keyword, $options: 'i' } },
+        { 'address.pincode': { $regex: keyword, $options: 'i' } }
       ];
     }
 

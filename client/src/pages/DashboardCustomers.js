@@ -46,6 +46,16 @@ const handleAddCustomer = async (e) => {
   e.preventDefault();
   setAddError('');
   setAddSuccess('');
+
+  if (!form.name.trim()) {
+    setAddError('Name is required');
+    return;
+  }
+  if (!form.email.trim() && !form.phone.trim()) {
+    setAddError('Please provide either an email or a phone number');
+    return;
+  }
+
   setAddLoading(true);
   try {
     const payload = {
@@ -123,14 +133,27 @@ const handleAddCustomer = async (e) => {
           <label className="label">Full name</label>
           <input className="input" name="name" required value={form.name} onChange={handleChange} />
         </div>
-        <div className="field">
-          <label className="label">Email</label>
-          <input className="input" type="email" name="email" required value={form.email} onChange={handleChange} />
-        </div>
-        <div className="field">
-          <label className="label">Phone</label>
-          <input className="input" name="phone" value={form.phone} onChange={handleChange} />
-        </div>
+       <div className="field">
+  <label className="label">Email (optional)</label>
+  <input
+    className="input"
+    type="email"
+    name="email"
+    placeholder="Leave blank if customer has no email"
+    value={form.email}
+    onChange={handleChange}
+  />
+</div>
+<div className="field">
+  <label className="label">Phone</label>
+  <input
+    className="input"
+    name="phone"
+    placeholder="Required if no email is provided"
+    value={form.phone}
+    onChange={handleChange}
+  />
+</div>
         <div className="field">
           <label className="label">Password (optional)</label>
           <input className="input" type="text" name="password" placeholder="Leave blank to auto-generate" value={form.password} onChange={handleChange} />
@@ -169,12 +192,12 @@ const handleAddCustomer = async (e) => {
       </div>
 
       <form onSubmit={handleSearch} className="customer-search">
-        <input
-          className="input"
-          placeholder="Search by name, email, or phone..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+      <input
+  className="input"
+  placeholder="Search by name, email, phone, or address..."
+  value={search}
+  onChange={e => setSearch(e.target.value)}
+/>
         <button className="btn btn-primary btn-sm" type="submit">Search</button>
         {search && (
           <button
@@ -211,7 +234,7 @@ const handleAddCustomer = async (e) => {
               {customers.map(c => (
                 <tr key={c._id}>
                   <td style={{ fontWeight: 600 }}>{c.name}</td>
-                  <td className="text-muted">{c.email}</td>
+                 <td className="text-muted">{c.email || '—'}</td>
                   <td className="text-muted">{c.phone || '-'}</td>
                   <td className="mono">{c.totalOrders}</td>
                   <td className="mono">{formatCurrency(c.totalSpent)}</td>

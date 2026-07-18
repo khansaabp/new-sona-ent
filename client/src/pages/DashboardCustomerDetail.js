@@ -68,10 +68,10 @@ const handleSaveNotes = async () => {
 </div>
 
       <div className="customer-profile card">
-  <div className="customer-profile__row">
-    <span className="text-muted">Email</span>
-    <span>{customer.email}</span>
-  </div>
+<div className="customer-profile__row">
+  <span className="text-muted">Email</span>
+  <span>{customer.email || 'Not provided'}</span>
+</div>
   <div className="customer-profile__row">
     <span className="text-muted">Phone</span>
     <span>{customer.phone || 'Not provided'}</span>
