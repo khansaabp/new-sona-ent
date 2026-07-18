@@ -24,7 +24,7 @@ const ProductReviews = ({ productId }) => {
     if (user && user.role === 'customer') {
       api.get(`/products/${productId}/can-review`).then(res => setCanReviewData(res.data));
     }
-  }, [productId, user]);
+  }, [productId, user,fetchReviews]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
