@@ -4,6 +4,9 @@ import api from '../utils/api';
 import { useCart } from '../context/CartContext';
 import { formatCurrency } from '../utils/format';
 import './ProductDetail.css';
+import ProductReviews from '../components/ProductReviews';
+import StarRating from '../components/StarRating';
+import ShareButton from '../components/ShareButton';
 
 const categoryGlyphs = {
   Smartphones: '▣', Laptops: '▭', Tablets: '▥', Audio: '◐', Wearables: '◍',
@@ -56,6 +59,14 @@ const ProductDetail = () => {
           <span className="tag tag-cyan mono">{product.category}</span>
           <h1 className="product-detail__title">{product.name}</h1>
           <div className="text-secondary">{product.brand} &middot; SKU: {product.sku}</div>
+          {product.numReviews > 0 && (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+    <StarRating rating={product.rating} size={16} />
+    <span className="text-muted" style={{ fontSize: 13 }}>
+      {product.rating.toFixed(1)} ({product.numReviews} review{product.numReviews !== 1 ? 's' : ''})
+    </span>
+  </div>
+)}
 
           <div className="product-detail__price">
             <span className="mono product-detail__price-current">{formatCurrency(product.price)}</span>
@@ -93,21 +104,27 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {product.stock > 0 && (
-            <div className="product-detail__actions">
-              <div className="qty-stepper">
-                <button onClick={() => setQty(q => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
-                <span className="mono">{qty}</span>
-                <button onClick={() => setQty(q => Math.min(product.stock, q + 1))} aria-label="Increase quantity">+</button>
-              </div>
-              <button className="btn btn-primary" onClick={handleAdd}>
-                {added ? 'Added to cart ✓' : 'Add to cart'}
-              </button>
-              <Link to="/cart" className="btn btn-ghost">Go to cart</Link>
-            </div>
-          )}
+       {product.stock > 0 && (
+  <div className="product-detail__actions">
+    <div className="qty-stepper">
+      <button onClick={() => setQty(q => Math.max(1, q - 1))} aria-label="Decrease quantity">−</button>
+      <span className="mono">{qty}</span>
+      <button onClick={() => setQty(q => Math.min(product.stock, q + 1))} aria-label="Increase quantity">+</button>
+    </div>
+    <button className="btn btn-primary" onClick={handleAdd}>
+      {added ? 'Added to cart ✓' : 'Add to cart'}
+    </button>
+    <Link to="/cart" className="btn btn-ghost">Go to cart</Link>
+    <ShareButton
+      title={product.name}
+      text={`Check out ${product.name} at New Sona Enterprises`}
+      url={`/product/${product._id}`}
+    />
+  </div>
+)}
         </div>
       </div>
+      <ProductReviews productId={product._id} />
     </div>
   );
 };

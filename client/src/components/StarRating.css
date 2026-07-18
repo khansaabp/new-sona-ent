@@ -1,0 +1,22 @@
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+  line-height: 1;
+}
+
+.star--filled {
+  color: var(--accent-amber);
+}
+
+.star--empty {
+  color: var(--border-strong);
+}
+
+.star--interactive {
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.star--interactive:hover {
+  transform: scale(1.15);
+}

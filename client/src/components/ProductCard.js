@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { formatCurrency } from "../utils/format";
 import { useCart } from "../context/CartContext";
 import "./ProductCard.css";
+import StarRating from './StarRating';
+import ShareButton from './ShareButton';
 
 const categoryGlyphs = {
   Refrigerators: "▣",
@@ -55,6 +57,12 @@ const ProductCard = ({ product }) => {
         <div className="product-card__category mono">{product.category}</div>
         <h3 className="product-card__name">{product.name}</h3>
         <div className="product-card__brand text-muted">{product.brand}</div>
+        {product.numReviews > 0 && (
+  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+    <StarRating rating={product.rating} size={12} />
+    <span className="text-muted" style={{ fontSize: 11 }}>({product.numReviews})</span>
+  </div>
+)}
         <div className="product-card__pricing">
           <span className="product-card__price mono">
             {formatCurrency(product.price)}
@@ -65,13 +73,23 @@ const ProductCard = ({ product }) => {
             </span>
           )}
         </div>
-        <button
-          className="btn btn-primary btn-sm product-card__add"
-          onClick={handleAdd}
-          disabled={product.stock === 0}
-        >
-          {product.stock === 0 ? "Unavailable" : "Add to cart"}
-        </button>
+    <div style={{ display: 'flex', gap: 6 }}>
+  <button
+    className="btn btn-primary btn-sm product-card__add"
+    onClick={handleAdd}
+    disabled={product.stock === 0}
+    style={{ flex: 1 }}
+  >
+    {product.stock === 0 ? 'Unavailable' : 'Add to cart'}
+  </button>
+  <div onClick={e => e.preventDefault()}>
+    <ShareButton
+      title={product.name}
+      text={`Check out ${product.name}`}
+      url={`/product/${product._id}`}
+    />
+  </div>
+</div>
       </div>
     </Link>
   );

@@ -12,6 +12,7 @@ const {
   approveProduct,
   rejectProduct
 } = require('../controllers/productController');
+const { getProductReviews, canReview, createReview, deleteReview } = require('../controllers/reviewController');
 const { protect, authorize, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -21,6 +22,10 @@ router.get('/meta/filters', getFilterMeta);
 router.get('/meta/low-stock', protect, authorize('admin', 'staff'), getLowStock);
 router.get('/meta/pending-approval', protect, authorize('admin'), getPendingApproval);
 router.get('/:id', optionalAuth, getProductById);
+router.get('/:id/reviews', getProductReviews);
+router.get('/:id/can-review', protect, canReview);
+router.post('/:id/reviews', protect, createReview);
+router.delete('/:id/reviews/:reviewId', protect, deleteReview);
 // Image upload route
 router.post(
   '/upload-image',
