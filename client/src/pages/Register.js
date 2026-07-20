@@ -42,11 +42,11 @@ const Register = () => {
           </div>
           <div className="field">
             <label className="label">Email address</label>
-            <input className="input" name="email" type="email" required value={form.email} onChange={handleChange} placeholder="you@example.com" />
+            <input className="input" name="email" type="email"  value={form.email} onChange={handleChange} placeholder="you@example.com" />
           </div>
           <div className="field">
             <label className="label">Phone number</label>
-            <input className="input" name="phone" value={form.phone} onChange={handleChange} placeholder="9999999999" />
+            <input className="input" name="phone" required value={form.phone} onChange={handleChange} placeholder="9999999999" />
           </div>
           <div className="field">
             <label className="label">Password</label>
