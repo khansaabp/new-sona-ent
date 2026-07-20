@@ -18,7 +18,7 @@ const sendOTP = async (phone, otp) => {
   
   const twilio = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
   await twilio.messages.create({
-    body: `Your ElectroShop verification code is ${otp}. Valid for 10 minutes.`,
+    body: `Your NewSonaEnterprises verification code is ${otp}. Valid for 10 minutes.`,
     from: process.env.TWILIO_PHONE_NUMBER,
     to: `+91${phone}`
   });
