@@ -24,7 +24,7 @@ import DashboardCustomers from './pages/DashboardCustomers';
 import DashboardCustomerDetail from './pages/DashboardCustomerDetail';
 import DashboardBilling from './pages/DashboardBilling';
 import DashboardDeletedOrders from './pages/DashboardDeletedOrders';
-
+import ForgotPassword from './pages/ForgotPassword';
 function App() {
   return (
     <AuthProvider>
@@ -39,7 +39,7 @@ function App() {
               <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-
+<Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
               <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
               <Route path="/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
@@ -60,6 +60,7 @@ function App() {
 <Route path="billing" element={<DashboardBilling />} />
 <Route path="products" element={<DashboardProducts />} />
 <Route path="deleted-orders" element={<DashboardDeletedOrders />} />
+
               </Route>
             </Routes>
             <Footer />

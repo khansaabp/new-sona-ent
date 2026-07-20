@@ -30,3 +30,29 @@
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
 }
+.auth-mode-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--bg-panel-raised);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.auth-mode-tab {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.auth-mode-tab--active {
+  background: var(--accent-cyan);
+  color: #032422;
+}
