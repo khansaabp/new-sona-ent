@@ -15,13 +15,13 @@ const sendOTP = async (phone, otp) => {
 
   // ---- PRODUCTION EXAMPLE (uncomment and configure when ready) ----
   // Example using Twilio:
-  //
-  // const twilio = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
-  // await twilio.messages.create({
-  //   body: `Your ElectroShop verification code is ${otp}. Valid for 10 minutes.`,
-  //   from: process.env.TWILIO_PHONE_NUMBER,
-  //   to: `+91${phone}`
-  // });
+  
+  const twilio = require('twilio')(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
+  await twilio.messages.create({
+    body: `Your ElectroShop verification code is ${otp}. Valid for 10 minutes.`,
+    from: process.env.TWILIO_PHONE_NUMBER,
+    to: `+91${phone}`
+  });
 
   return true;
 };
