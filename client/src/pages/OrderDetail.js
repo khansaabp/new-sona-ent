@@ -138,7 +138,6 @@ const handleDeleteInvoice = async () => {
       <div className="text-muted">GSTIN: 27ABCDE1234F1Z5</div>
     )}
     <div className="text-muted">nagar parishad complex,akola road, Hingoli, Maharashtra, India.</div>
-     <div className="text-muted">9420817170</div>
       <div className="text-muted">8483094199</div>
        <div className="text-muted">9404866766</div>
     <div className="invoice__doc-type">
@@ -276,7 +275,7 @@ const handleDeleteInvoice = async () => {
 </table>
       {gstBreakdown.isTaxable && (
   <div className="invoice__gst-table">
-    <h4 className="invoice__gst-title">GST Breakdown</h4>
+    {/* <h4 className="invoice__gst-title">GST Breakdown</h4> */}
     <table>
       <thead>
         <tr>
