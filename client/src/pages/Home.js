@@ -22,6 +22,10 @@ const slides = [
     url:'https://res.cloudinary.com/axufv7xe/image/upload/v1783877969/1.2_fmpufx.jpg',
     label:'Smartphones'
   },
+    {
+    url: 'https://res.cloudinary.com/axufv7xe/image/upload/v1784642498/IMG-20260721-WA0050_xtgdov.jpg',
+    label: 'Premium Audio'
+  },
   {
     url: 'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6524/6524315cv22d.jpg?w=800&q=80',
     label: 'Latest Laptops'
@@ -30,11 +34,11 @@ const slides = [
     url: 'https://assets.gadgets360cdn.com/pricee/assets/category/202005/bluestar-ac-og-image-1200x628_1590075894.jpg',
     label: 'Smartphones'
   },
-  {
+
+   {
     url: 'https://mahajanelectronics.com/cdn/shop/files/61YJyo7FGdL._SL1500.jpg?v=1726301308&width=1200?w=800&q=80',
     label: 'Premium Audio'
-  },
-  
+  }
 ];
 
 const Carousel = () => {
