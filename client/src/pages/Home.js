@@ -82,7 +82,7 @@ const Home = () => {
   const [featured, setFeatured] = useState([]);
 
   useEffect(() => {
-    api.get('/products?sort=rating&limit=6').then(res => setFeatured(res.data.products)).catch(() => {});
+    api.get('/products?sort=rating&limit=10').then(res => setFeatured(res.data.products)).catch(() => {});
   }, []);
 
   return (
