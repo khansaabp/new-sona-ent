@@ -25,6 +25,8 @@ import DashboardCustomerDetail from './pages/DashboardCustomerDetail';
 import DashboardBilling from './pages/DashboardBilling';
 import DashboardDeletedOrders from './pages/DashboardDeletedOrders';
 import ForgotPassword from './pages/ForgotPassword';
+import DashboardInsights from './pages/DashboardInsights';
+
 function App() {
   return (
     <AuthProvider>
@@ -60,6 +62,7 @@ function App() {
 <Route path="billing" element={<DashboardBilling />} />
 <Route path="products" element={<DashboardProducts />} />
 <Route path="deleted-orders" element={<DashboardDeletedOrders />} />
+<Route path="insights" element={<DashboardInsights />} />
 
               </Route>
             </Routes>

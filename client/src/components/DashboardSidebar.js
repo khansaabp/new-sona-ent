@@ -2,18 +2,25 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './DashboardSidebar.css';
-const links = [
-  { to: '/dashboard', label: 'Overview', icon: '◧', exact: true },
-  { to: '/dashboard/billing', label: 'New Sale', icon: '⊕' },
-  { to: '/dashboard/orders', label: 'Orders & Billing', icon: '▤' },
-  { to: '/dashboard/credit', label: 'Credit Accounts', icon: '◔' },
-  { to: '/dashboard/customers', label: 'Customers', icon: '◍' },
-  { to: '/dashboard/products', label: 'Inventory', icon: '▣' },
-  { to: '/dashboard/deleted-orders', label: 'Deleted Invoices', icon: '🗑' }
-];
+const getLinks = (isAdmin) => {
+  const links = [
+    { to: '/dashboard', label: 'Overview', icon: '◧', exact: true },
+    { to: '/dashboard/billing', label: 'New Sale', icon: '⊕' },
+    { to: '/dashboard/orders', label: 'Orders & Billing', icon: '▤' },
+    { to: '/dashboard/credit', label: 'Credit Accounts', icon: '◔' },
+    { to: '/dashboard/customers', label: 'Customers', icon: '◍' },
+    { to: '/dashboard/products', label: 'Inventory', icon: '▣' }
+  ];
+  if (isAdmin) {
+    links.push({ to: '/dashboard/insights', label: 'Customer Insights', icon: '◈' });
+    links.push({ to: '/dashboard/deleted-orders', label: 'Deleted Invoices', icon: '🗑' });
+  }
+  return links;
+};
 
 const DashboardSidebar = () => {
   const { user } = useAuth();
+  const links = getLinks(user?.role === 'admin');
 
   return (
     <aside className="dash-sidebar">

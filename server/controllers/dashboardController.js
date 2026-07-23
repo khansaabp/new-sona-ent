@@ -191,11 +191,137 @@ const getRecentOrders = async (req, res, next) => {
     next(err);
   }
 };
+// @desc    Analyze customer notes for product mentions + geographic distribution
+// @route   GET /api/dashboard/customer-insights
+// @access  Private/Admin
+const getCustomerInsights = async (req, res, next) => {
+  try {
+    const User = require('../models/User');
+    const Product = require('../models/Product');
+
+    // ---- 1. Geographic distribution (from structured address data) ----
+    const geoAgg = await User.aggregate([
+      { $match: { role: 'customer', 'address.city': { $exists: true, $ne: '' } } },
+      {
+        $group: {
+          _id: { $trim: { input: { $toLower: '$address.city' } } },
+          count: { $sum: 1 },
+          displayName: { $first: '$address.city' }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+
+    const cityDistribution = geoAgg.map(g => ({
+      city: g.displayName,
+      count: g.count
+    }));
+
+    const stateAgg = await User.aggregate([
+      { $match: { role: 'customer', 'address.state': { $exists: true, $ne: '' } } },
+      {
+        $group: {
+          _id: { $trim: { input: { $toLower: '$address.state' } } },
+          count: { $sum: 1 },
+          displayName: { $first: '$address.state' }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]);
+
+    const stateDistribution = stateAgg.map(g => ({
+      state: g.displayName,
+      count: g.count
+    }));
+
+    // ---- 2. Product mention analysis from admin notes ----
+    const customersWithNotes = await User.find({
+      role: 'customer',
+      adminNotes: { $exists: true, $ne: '' }
+    }).select('name adminNotes');
+
+    const allProducts = await Product.find({ isActive: true }).select('name brand category');
+
+    // Count mentions: check each product name/brand against each note (case-insensitive substring match)
+    const mentionCounts = {};
+    const mentionedByCustomers = {}; // productName -> [customerNames]
+
+    customersWithNotes.forEach(customer => {
+      const noteLower = customer.adminNotes.toLowerCase();
+
+      allProducts.forEach(product => {
+        const nameLower = product.name.toLowerCase();
+        const brandLower = product.brand.toLowerCase();
+
+        // Match on full product name, or brand name mentioned alongside category context
+        const nameMatch = noteLower.includes(nameLower);
+        const brandMatch = noteLower.includes(brandLower) && brandLower.length > 3; // avoid short-brand false positives
+
+        if (nameMatch || brandMatch) {
+          const key = product.name;
+          mentionCounts[key] = (mentionCounts[key] || 0) + 1;
+          if (!mentionedByCustomers[key]) mentionedByCustomers[key] = [];
+          if (!mentionedByCustomers[key].includes(customer.name)) {
+            mentionedByCustomers[key].push(customer.name);
+          }
+        }
+      });
+    });
+
+    const productMentions = Object.entries(mentionCounts)
+      .map(([name, count]) => ({
+        name,
+        count,
+        customers: mentionedByCustomers[name]
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // ---- 3. Simple keyword frequency from notes (common recurring words, excluding stopwords) ----
+    const stopwords = new Set([
+      'the', 'a', 'an', 'and', 'or', 'but', 'is', 'are', 'was', 'were', 'to', 'of', 'in',
+      'on', 'at', 'for', 'with', 'this', 'that', 'always', 'never', 'very', 'has', 'have',
+      'customer', 'he', 'she', 'they', 'it', 'his', 'her', 'their', 'been', 'be', 'will',
+      'would', 'can', 'could', 'not', 'no', 'yes', 'also', 'just', 'about', 'from'
+    ]);
+
+    const wordFreq = {};
+    customersWithNotes.forEach(customer => {
+      const words = customer.adminNotes
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 3 && !stopwords.has(w));
+
+      words.forEach(w => {
+        wordFreq[w] = (wordFreq[w] || 0) + 1;
+      });
+    });
+
+    const topKeywords = Object.entries(wordFreq)
+      .map(([word, count]) => ({ word, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 15);
+
+    res.json({
+      cityDistribution,
+      stateDistribution,
+      productMentions,
+      topKeywords,
+      totalCustomersWithNotes: customersWithNotes.length,
+      totalCustomersWithAddress: geoAgg.reduce((sum, g) => sum + g.count, 0)
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   getSummary,
   getSalesTrend,
   getTopProducts,
   getCategoryBreakdown,
-  getRecentOrders
+  getRecentOrders,
+  getCustomerInsights
 };

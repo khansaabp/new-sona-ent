@@ -4,7 +4,8 @@ const {
   getSalesTrend,
   getTopProducts,
   getCategoryBreakdown,
-  getRecentOrders
+  getRecentOrders,
+  getCustomerInsights
 } = require('../controllers/dashboardController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -17,5 +18,5 @@ router.get('/sales-trend', getSalesTrend);
 router.get('/top-products', getTopProducts);
 router.get('/category-breakdown', getCategoryBreakdown);
 router.get('/recent-orders', getRecentOrders);
-
+router.get('/customer-insights', authorize('admin'), getCustomerInsights);
 module.exports = router;
