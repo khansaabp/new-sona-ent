@@ -218,22 +218,23 @@ const getCustomerInsights = async (req, res, next) => {
       count: g.count
     }));
 
-    const stateAgg = await User.aggregate([
-      { $match: { role: 'customer', 'address.state': { $exists: true, $ne: '' } } },
-      {
-        $group: {
-          _id: { $trim: { input: { $toLower: '$address.state' } } },
-          count: { $sum: 1 },
-          displayName: { $first: '$address.state' }
-        }
-      },
-      { $sort: { count: -1 } }
-    ]);
+   const streetAgg = await User.aggregate([
+  { $match: { role: 'customer', 'address.street': { $exists: true, $ne: '' } } },
+  {
+    $group: {
+      _id: { $trim: { input: { $toLower: '$address.street' } } },
+      count: { $sum: 1 },
+      displayName: { $first: '$address.street' }
+    }
+  },
+  { $sort: { count: -1 } },
+  { $limit: 10 }
+]);
 
-    const stateDistribution = stateAgg.map(g => ({
-      state: g.displayName,
-      count: g.count
-    }));
+const streetDistribution = streetAgg.map(g => ({
+  street: g.displayName,
+  count: g.count
+}));
 
     // ---- 2. Product mention analysis from admin notes ----
     const customersWithNotes = await User.find({
@@ -304,14 +305,14 @@ const getCustomerInsights = async (req, res, next) => {
       .sort((a, b) => b.count - a.count)
       .slice(0, 15);
 
-    res.json({
-      cityDistribution,
-      stateDistribution,
-      productMentions,
-      topKeywords,
-      totalCustomersWithNotes: customersWithNotes.length,
-      totalCustomersWithAddress: geoAgg.reduce((sum, g) => sum + g.count, 0)
-    });
+res.json({
+  cityDistribution,
+  streetDistribution,
+  productMentions,
+  topKeywords,
+  totalCustomersWithNotes: customersWithNotes.length,
+  totalCustomersWithAddress: geoAgg.reduce((sum, g) => sum + g.count, 0)
+});
   } catch (err) {
     next(err);
   }

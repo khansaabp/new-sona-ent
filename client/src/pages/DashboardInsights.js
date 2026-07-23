@@ -16,15 +16,14 @@ const DashboardInsights = () => {
   }, []);
 
   if (!data) return <div className="empty-state">Loading insights...</div>;
-
-  const {
-    cityDistribution,
-    stateDistribution,
-    productMentions,
-    topKeywords,
-    totalCustomersWithNotes,
-    totalCustomersWithAddress
-  } = data;
+const {
+  cityDistribution,
+  streetDistribution,
+  productMentions,
+  topKeywords,
+  totalCustomersWithNotes,
+  totalCustomersWithAddress
+} = data;
 
   const maxKeywordCount = Math.max(...topKeywords.map(k => k.count), 1);
 
@@ -69,26 +68,26 @@ const DashboardInsights = () => {
           )}
         </div>
 
-        {/* State distribution */}
-        <div className="card chart-card">
-          <h2>Customers by state</h2>
-          {stateDistribution.length === 0 ? (
-            <div className="empty-state" style={{ padding: 24 }}>No address data yet.</div>
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={stateDistribution} layout="vertical" margin={{ left: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#232E38" horizontal={false} />
-                <XAxis type="number" tick={{ fill: '#5C6E7A', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                <YAxis dataKey="state" type="category" width={100} tick={{ fill: '#93A4B0', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: '#1A222B', border: '1px solid #232E38', borderRadius: 8, fontSize: 13 }}
-                  formatter={(value) => [value, 'Customers']}
-                />
-                <Bar dataKey="count" fill="#5B9DFF" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+{/* Street distribution */}
+<div className="card chart-card">
+  <h2>Customers by area</h2>
+  {streetDistribution.length === 0 ? (
+    <div className="empty-state" style={{ padding: 24 }}>No address data yet.</div>
+  ) : (
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={streetDistribution} layout="vertical" margin={{ left: 10 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#232E38" horizontal={false} />
+        <XAxis type="number" tick={{ fill: '#5C6E7A', fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+        <YAxis dataKey="street" type="category" width={140} tick={{ fill: '#93A4B0', fontSize: 10 }} axisLine={false} tickLine={false} />
+        <Tooltip
+          contentStyle={{ background: '#1A222B', border: '1px solid #232E38', borderRadius: 8, fontSize: 13 }}
+          formatter={(value) => [value, 'Customers']}
+        />
+        <Bar dataKey="count" fill="#5B9DFF" radius={[0, 4, 4, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  )}
+</div>
 
         {/* Product mentions */}
         <div className="card chart-card chart-card--wide">
