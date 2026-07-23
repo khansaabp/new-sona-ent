@@ -238,6 +238,7 @@ const streetDistribution = streetAgg.map(g => ({
 }));
 
   // ---- 2. Product mention analysis from admin notes (local NLP: stemming + fuzzy matching) ----
+   // ---- 2. Product mention analysis from admin notes (local NLP: stemming + fuzzy matching) ----
     const customersWithNotes = await User.find({
       role: 'customer',
       adminNotes: { $exists: true, $ne: '' }
@@ -281,22 +282,23 @@ const streetDistribution = streetAgg.map(g => ({
     const topKeywords = nlpService.extractTopKeywords(allNoteTexts, 15);
 
     // ---- 4. Sentiment overview across all notes (local, rule-based — no external API) ----
-    // let positiveCount = 0;
-    // let negativeCount = 0;
-    // let neutralCount = 0;
+    let positiveCount = 0;
+    let negativeCount = 0;
+    let neutralCount = 0;
 
-    // customersWithNotes.forEach(customer => {
-    //   const score = nlpService.analyzeSentiment(customer.adminNotes);
-    //   if (score > 0.1) positiveCount++;
-    //   else if (score < -0.1) negativeCount++;
-    //   else neutralCount++;
-    // });
+    customersWithNotes.forEach(customer => {
+      const score = nlpService.analyzeSentiment(customer.adminNotes);
+      if (score > 0.1) positiveCount++;
+      else if (score < -0.1) negativeCount++;
+      else neutralCount++;
+    });
 
 res.json({
       cityDistribution,
       streetDistribution,
       productMentions,
       topKeywords,
+      sentimentOverview: { positive: positiveCount, negative: negativeCount, neutral: neutralCount },
       totalCustomersWithNotes: customersWithNotes.length,
       totalCustomersWithAddress: geoAgg.reduce((sum, g) => sum + g.count, 0)
     });

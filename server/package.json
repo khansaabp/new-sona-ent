@@ -13,7 +13,6 @@
     "seed": "node config/seed.js"
   },
   "dependencies": {
-    "afinn-165": "^1.0.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
@@ -24,9 +23,15 @@
     "mongoose": "^8.5.0",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
-    "natural": "^8.1.1"
+    "natural": "^8.1.1",
+    "redis": "^3.1.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
+  },
+  "overrides": {
+    "afinn-165": "1.0.0",
+    "redis": "^3.1.2",
+    "uuid":"8.3.2"
   }
 }

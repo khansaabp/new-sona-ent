@@ -21,9 +21,14 @@ const {
   streetDistribution,
   productMentions,
   topKeywords,
+  sentimentOverview,
   totalCustomersWithNotes,
   totalCustomersWithAddress
 } = data;
+
+const totalSentiments = sentimentOverview
+  ? sentimentOverview.positive + sentimentOverview.negative + sentimentOverview.neutral
+  : 0;
 
   const maxKeywordCount = Math.max(...topKeywords.map(k => k.count), 1);
 
@@ -42,7 +47,7 @@ const {
   <StatCard label="Products Mentioned in Notes" value={productMentions.length} tone="green" />
 </div>
 
-{/* {totalSentiments > 0 && (
+{totalSentiments > 0 && (
   <div className="card sentiment-card">
     <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Note sentiment overview</h2>
     <div className="sentiment-bar">
@@ -74,7 +79,7 @@ const {
       <span><span className="sentiment-dot sentiment-dot--negative"></span> Negative ({sentimentOverview.negative})</span>
     </div>
   </div>
-)} */}
+)}
 
       <div className="dash-grid">
         {/* City distribution */}

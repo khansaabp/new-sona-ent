@@ -108,17 +108,18 @@ const extractTopKeywords = (notesArray, limit = 15) => {
  * Basic sentiment scoring per note using natural's AFINN-based analyzer.
  * Returns a score: positive = happy customer, negative = frustrated/complaint.
  */
-// const analyzeSentiment = (text) => {
-//   const Analyzer = natural.SentimentAnalyzer;
-//   const stemmerForSentiment = natural.PorterStemmer;
-//   const analyzer = new Analyzer('English', stemmerForSentiment, 'afinn');
-//   const tokens = tokenizer.tokenize(text);
-//   if (tokens.length === 0) return 0;
-//   return analyzer.getSentiment(tokens);
-// };
+const analyzeSentiment = (text) => {
+  const Analyzer = natural.SentimentAnalyzer;
+  const stemmerForSentiment = natural.PorterStemmer;
+  const analyzer = new Analyzer('English', stemmerForSentiment, 'afinn');
+  const tokens = tokenizer.tokenize(text);
+  if (tokens.length === 0) return 0;
+  return analyzer.getSentiment(tokens);
+};
 
 module.exports = {
   extractStemmedTokens,
   isProductMentioned,
-  extractTopKeywords
+  extractTopKeywords,
+  analyzeSentiment
 };
