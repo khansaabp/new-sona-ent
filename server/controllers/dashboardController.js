@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const nlpService = require('../utils/nlpService');
 
 // @desc    Get dashboard summary stats
 // @route   GET /api/dashboard/summary
@@ -236,7 +237,7 @@ const streetDistribution = streetAgg.map(g => ({
   count: g.count
 }));
 
-    // ---- 2. Product mention analysis from admin notes ----
+  // ---- 2. Product mention analysis from admin notes (local NLP: stemming + fuzzy matching) ----
     const customersWithNotes = await User.find({
       role: 'customer',
       adminNotes: { $exists: true, $ne: '' }
@@ -244,28 +245,22 @@ const streetDistribution = streetAgg.map(g => ({
 
     const allProducts = await Product.find({ isActive: true }).select('name brand category');
 
-    // Count mentions: check each product name/brand against each note (case-insensitive substring match)
     const mentionCounts = {};
-    const mentionedByCustomers = {}; // productName -> [customerNames]
+    const mentionedByCustomers = {}; // productName -> [{ name, confidence, method }]
 
     customersWithNotes.forEach(customer => {
-      const noteLower = customer.adminNotes.toLowerCase();
-
       allProducts.forEach(product => {
-        const nameLower = product.name.toLowerCase();
-        const brandLower = product.brand.toLowerCase();
+        const result = nlpService.isProductMentioned(customer.adminNotes, product.name, product.brand);
 
-        // Match on full product name, or brand name mentioned alongside category context
-        const nameMatch = noteLower.includes(nameLower);
-        const brandMatch = noteLower.includes(brandLower) && brandLower.length > 3; // avoid short-brand false positives
-
-        if (nameMatch || brandMatch) {
+        if (result.matched) {
           const key = product.name;
           mentionCounts[key] = (mentionCounts[key] || 0) + 1;
           if (!mentionedByCustomers[key]) mentionedByCustomers[key] = [];
-          if (!mentionedByCustomers[key].includes(customer.name)) {
-            mentionedByCustomers[key].push(customer.name);
-          }
+          mentionedByCustomers[key].push({
+            name: customer.name,
+            confidence: Math.round(result.confidence * 100),
+            method: result.method
+          });
         }
       });
     });
@@ -275,44 +270,37 @@ const streetDistribution = streetAgg.map(g => ({
         name,
         count,
         customers: mentionedByCustomers[name]
+          .sort((a, b) => b.confidence - a.confidence)
+          .map(c => c.name)
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // ---- 3. Simple keyword frequency from notes (common recurring words, excluding stopwords) ----
-    const stopwords = new Set([
-      'the', 'a', 'an', 'and', 'or', 'but', 'is', 'are', 'was', 'were', 'to', 'of', 'in',
-      'on', 'at', 'for', 'with', 'this', 'that', 'always', 'never', 'very', 'has', 'have',
-      'customer', 'he', 'she', 'they', 'it', 'his', 'her', 'their', 'been', 'be', 'will',
-      'would', 'can', 'could', 'not', 'no', 'yes', 'also', 'just', 'about', 'from'
-    ]);
+    // ---- 3. Keyword extraction using local NLP stemming (groups "laptop"/"laptops" together) ----
+    const allNoteTexts = customersWithNotes.map(c => c.adminNotes);
+    const topKeywords = nlpService.extractTopKeywords(allNoteTexts, 15);
 
-    const wordFreq = {};
+    // ---- 4. Sentiment overview across all notes (local, rule-based — no external API) ----
+    let positiveCount = 0;
+    let negativeCount = 0;
+    let neutralCount = 0;
+
     customersWithNotes.forEach(customer => {
-      const words = customer.adminNotes
-        .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ')
-        .split(/\s+/)
-        .filter(w => w.length > 3 && !stopwords.has(w));
-
-      words.forEach(w => {
-        wordFreq[w] = (wordFreq[w] || 0) + 1;
-      });
+      const score = nlpService.analyzeSentiment(customer.adminNotes);
+      if (score > 0.1) positiveCount++;
+      else if (score < -0.1) negativeCount++;
+      else neutralCount++;
     });
 
-    const topKeywords = Object.entries(wordFreq)
-      .map(([word, count]) => ({ word, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 15);
-
 res.json({
-  cityDistribution,
-  streetDistribution,
-  productMentions,
-  topKeywords,
-  totalCustomersWithNotes: customersWithNotes.length,
-  totalCustomersWithAddress: geoAgg.reduce((sum, g) => sum + g.count, 0)
-});
+      cityDistribution,
+      streetDistribution,
+      productMentions,
+      topKeywords,
+      sentimentOverview: { positive: positiveCount, negative: negativeCount, neutral: neutralCount },
+      totalCustomersWithNotes: customersWithNotes.length,
+      totalCustomersWithAddress: geoAgg.reduce((sum, g) => sum + g.count, 0)
+    });
   } catch (err) {
     next(err);
   }

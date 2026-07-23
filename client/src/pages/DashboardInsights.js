@@ -21,9 +21,14 @@ const {
   streetDistribution,
   productMentions,
   topKeywords,
+  sentimentOverview,
   totalCustomersWithNotes,
   totalCustomersWithAddress
 } = data;
+
+const totalSentiments = sentimentOverview
+  ? sentimentOverview.positive + sentimentOverview.negative + sentimentOverview.neutral
+  : 0;
 
   const maxKeywordCount = Math.max(...topKeywords.map(k => k.count), 1);
 
@@ -36,11 +41,45 @@ const {
         </div>
       </div>
 
-      <div className="stat-grid">
-        <StatCard label="Customers with Address" value={totalCustomersWithAddress} tone="cyan" />
-        <StatCard label="Customers with Notes" value={totalCustomersWithNotes} tone="amber" />
-        <StatCard label="Products Mentioned in Notes" value={productMentions.length} tone="green" />
-      </div>
+    <div className="stat-grid">
+  <StatCard label="Customers with Address" value={totalCustomersWithAddress} tone="cyan" />
+  <StatCard label="Customers with Notes" value={totalCustomersWithNotes} tone="amber" />
+  <StatCard label="Products Mentioned in Notes" value={productMentions.length} tone="green" />
+</div>
+
+{totalSentiments > 0 && (
+  <div className="card sentiment-card">
+    <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Note sentiment overview</h2>
+    <div className="sentiment-bar">
+      {sentimentOverview.positive > 0 && (
+        <div
+          className="sentiment-segment sentiment-segment--positive"
+          style={{ width: `${(sentimentOverview.positive / totalSentiments) * 100}%` }}
+          title={`Positive: ${sentimentOverview.positive}`}
+        />
+      )}
+      {sentimentOverview.neutral > 0 && (
+        <div
+          className="sentiment-segment sentiment-segment--neutral"
+          style={{ width: `${(sentimentOverview.neutral / totalSentiments) * 100}%` }}
+          title={`Neutral: ${sentimentOverview.neutral}`}
+        />
+      )}
+      {sentimentOverview.negative > 0 && (
+        <div
+          className="sentiment-segment sentiment-segment--negative"
+          style={{ width: `${(sentimentOverview.negative / totalSentiments) * 100}%` }}
+          title={`Negative: ${sentimentOverview.negative}`}
+        />
+      )}
+    </div>
+    <div className="sentiment-legend">
+      <span><span className="sentiment-dot sentiment-dot--positive"></span> Positive ({sentimentOverview.positive})</span>
+      <span><span className="sentiment-dot sentiment-dot--neutral"></span> Neutral ({sentimentOverview.neutral})</span>
+      <span><span className="sentiment-dot sentiment-dot--negative"></span> Negative ({sentimentOverview.negative})</span>
+    </div>
+  </div>
+)}
 
       <div className="dash-grid">
         {/* City distribution */}
